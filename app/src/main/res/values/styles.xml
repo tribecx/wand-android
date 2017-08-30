@@ -12,4 +12,9 @@
         <item name="android:windowBackground">@drawable/background_splash</item>
     </style>
 
+    <style name="InformationalTextView">
+        <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:textColor">@color/text_color_white</item>
+    </style>
+
 </resources>

@@ -4,13 +4,13 @@
         <shape>
             <gradient
                 android:angle="225"
-                android:endColor="@color/blue"
+                android:endColor="@color/blue_dark"
                 android:startColor="@color/purple" />
         </shape>
     </item>
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_wand_logo" />
+            android:src="@drawable/img_wand_logo" />
     </item>
 </layer-list>
