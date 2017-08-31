@@ -17,4 +17,10 @@
         <item name="android:textColor">@color/text_color_white</item>
     </style>
 
+    <style name="VioletButton">
+        <item name="android:background">@drawable/background_violet_button</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/text_color_white</item>
+    </style>
+
 </resources>
