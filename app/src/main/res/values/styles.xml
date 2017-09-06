@@ -12,6 +12,15 @@
         <item name="android:windowBackground">@drawable/background_splash</item>
     </style>
 
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="Toolbar" parent="AppTheme">
+        <item name="android:textColorSecondary">@android:color/white</item> <!-- icons color  -->
+        <item name="android:actionMenuTextColor">@android:color/white</item>
+    </style>
+
     <style name="InformationalTextView">
         <item name="android:textSize">@dimen/text_size_medium</item>
         <item name="android:textColor">@color/text_color_white</item>

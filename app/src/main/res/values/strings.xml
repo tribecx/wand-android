@@ -1,12 +1,32 @@
 <resources>
     <!-- app name -->
     <string name="app_name">wand</string>
-    <!-- app strings -->
-    <string name="label_skip">Saltar</string>
 
-    <!-- strings related to Onboarding Activity -->
+    <!-- app strings -->
+    <string name="label_ok">OK</string>
+    <string name="label_skip">Saltar</string>
+    <string name="label_settings">Ajustes</string>
+    <string name="label_add_device">Añadir dispositivo</string>
+    <string name="label_lock">Bloquear</string>
+    <string name="label_activate">Activar</string>
+    <string name="label_of">de %1$s</string>
+    <string name="label_cancel">Cancelar</string>
+
+    <!-- strings related to onboarding activity -->
     <string name="label_onboarding_section_0">Wand es una plataforma\ndigital para controlar tus cosas</string>
     <string name="label_onboarding_section_1">Funciona a través de tecnología\ninalámbrica bluetooth</string>
     <string name="label_onboarding_section_2">Controla los dispositivos\ncercanos a wand</string>
     <string name="label_onboarding_section_3">¡Que empiece la magia!</string>
+
+    <!-- strings related to main activity -->
+    <string name="warning_disable_bluetooth_title">Activa el bluetooth</string>
+    <string name="warning_disable_bluetooth_message">Wand es una aplicación que utiliza la tecnología bluetooth para su funcionamiento. Actívalo si quieres usar todo su potencial.</string>
+
+    <!-- strings related to add device activity -->
+    <string name="label_looking_devices">Buscando\ndispositivos</string>
+
+    <!-- strings related to settings screen -->
+    <string name="label_information_config">Información</string>
+    <string name="label_about_us">Acerca de nosotros</string>
+    <string name="label_service_conditions">Condiciones del servicio</string>
 </resources>

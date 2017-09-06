@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.tunashields.wand.activities.SettingsActivity">
+
+    <include layout="@layout/toolbar" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/label_information_config"
+        android:textSize="@dimen/text_size_normal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:paddingEnd="0dp"
+        android:paddingStart="16dp">
+
+        <TextView
+            android:id="@+id/text_about_us"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="startInformationActivity"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:text="@string/label_about_us"
+            android:textColor="@color/text_color_black"
+            android:textSize="@dimen/text_size_medium" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray" />
+
+        <TextView
+            android:id="@+id/text_service_conditions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="startInformationActivity"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:text="@string/label_service_conditions"
+            android:textColor="@color/text_color_black"
+            android:textSize="@dimen/text_size_medium" />
+
+    </LinearLayout>
+
+</LinearLayout>

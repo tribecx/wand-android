@@ -1,0 +1,50 @@
+CONDICIONES GENERALES DE USO Y AVISO LEGAL (MÉXICO)
+
+1. OBJETO
+
+Las presentes Condiciones Generales de Uso regulan el uso de la aplicación informática WAND (en adelante, la “Aplicación”), ya sea con su actual nombre o con cualquier otra denominación con la que pueda figurar en el futuro, de Tuna Shields S. de R.L. de C.V. con domicilio social en Calle Mauna Loa #1214, col. Nuevo Milenio en Colima Colima., y dirección de e-mail alekelizalde@gmail.com (en adelante “WAND”). La Aplicación está dirigida exclusivamente a usuarios residentes en los Estados Unidos Mexicanos. Los usuarios que residan o se encuentren domiciliados en cualquier otro lugar y que decidan acceder y/o utilizar esta Aplicación lo harán bajo su propia responsabilidad y riesgo y deberán asegurarse de que tal acceso y/o utilización cumple con la legislación local aplicable. Al acceder y utilizar esta Aplicación y Sitio Web usted (“Usuario”) reconoce que ha leído y aceptado estas Condiciones Generales de Uso y se compromete a cumplir con todos sus términos y condiciones. Asimismo, el Usuario reconoce y acepta que el acceso y uso de esta Aplicación estará sujeto a las Condiciones Generales de Uso que se encuentren en vigor en el momento en que acceda a la misma. WAND se reserva el derecho de modificar en cualquier momento las presentes Condiciones Generales de Uso, así como cualesquiera otras condiciones generales o particulares que resulten de aplicación. Asimismo, WAND se reserva el derecho de suspender, interrumpir o dejar de operar la Aplicación y/o el Sitio Web en cualquier momento.
+
+2. CONTENIDOS
+
+A través de la Aplicación, WAND facilita al Usuario el control de dispositivos Bluetooth BLE fabricados espesificamente para manipularlos mediante la aplicación. La Aplicación, facilita al Usuario el acceso y control de los distintos aparatos WAND, información y datos proporcionados por WAND en relación con el Servicio (en adelante, los “Contenidos”). WAND se reserva el derecho a modificar en cualquier momento la presentación, la configuración y ubicación de la Aplicación, así como las correspondientes condiciones de acceso y uso. WAND no garantiza que los Contenidos proporcionados a través de la Aplicación Web serán en todo caso correctos, completos o actualizados.
+
+3. ACCESO Y USO
+
+El acceso a la Aplicación estará limitado a mayores de 18 años que adquiriaron al menos un aparto WAND o que reciba autoriación expresa de un un uasuario de WAND. No obstante lo anterior, el acceso a determinados contenidos y/o participación en las promociones de WAND puede estar limitado a mayores de edad o menores emancipados, según se indique en cada caso. Con carácter general, el Usuario podrá acceder a la Aplicación de forma libre y gratuita. El Usuario reconoce y acepta que el acceso y uso de la Aplicación tiene lugar libre y conscientemente, bajo su exclusiva responsabilidad. WAND no será en ningún caso responsable del uso que el Usuario y/o terceros pudieran hacer de la Aplicación ni de los daños y perjuicios que pudieran derivarse del mismo.
+
+El Usuario se compromete a hacer un uso adecuado y lícito de la Aplicación de conformidad con la legislación aplicable, las presentes Condiciones Generales de Uso, la moral y buenas costumbres generalmente aceptadas y el orden público. El Usuario deberá abstenerse de:
+	•	Hacer un uso no autorizado o fraudulento de la Aplicación;
+	•	Acceder o intentar acceder a recursos restringidos de la Aplicación; 
+	•	Utilizar la Aplicación con fines o efectos ilícitos, ilegales, contrarios a lo establecido en las presentes Condiciones Generales de Uso, a la buena fe y al orden público, lesivos de los derechos e intereses de terceros, o que de cualquier forma puedan dañar, inutilizar o sobrecargar o impedir la normal utilización o disfrute de la Aplicación;
+	•	Provocar daños en la Aplicación o en los sistemas de sus proveedores o de terceros;
+	•	Introducir o difundir virus informáticos o cualesquiera otros sistemas físicos o lógicos que sean susceptibles de provocar daños en los sistemas de WAND, de sus proveedores o de terceros,
+	•	Intentar acceder, utilizar y/o manipular los datos de WAND, terceros proveedores y otros usuarios;
+	•	Reproducir o copiar, distribuir, permitir el acceso del público a través de cualquier modalidad de comunicación pública, transformar o modificar los Contenidos, a menos que se cuente con la autorización del titular de los correspondientes derechos o ello esté legalmente permitido;
+	•	Obtener o intentar obtener los contenidos empleando para ello medios o procedimientos distintos de los que, según los casos, se hayan puesto a su disposición a este efecto.
+
+El Usuario únicamente podrá acceder a la Aplicación a través de los medios autorizados. Es responsabilidad del Usuario asegurarse de que ha descargado la Aplicación correcta en su dispositivo. WAND no será responsable en caso de que el Usuario no disponga de un dispositivo compatible o haya descargado una versión de la Aplicación incompatible con su dispositivo
+
+4. DERECHOS DE PROPIEDAD INTELECTUAL E INDUSTRIAL
+
+El Usuario reconoce y acepta que todos los derechos de propiedad intelectual e industrial sobre los contenidos y/o cualesquiera otros elementos insertados en la Aplicación (incluyendo, sin limitación, marcas, logotipos, nombres comerciales, textos, imágenes, gráficos, diseños, sonidos, bases de datos, software, diagramas de flujo, presentación, audio y vídeo), pertenecen a WAND.
+
+WAND autoriza al Usuario a utilizar, visualizar, imprimir, descargar y almacenar los contenidos y/o los elementos insertados en la Aplicación exclusivamente para su uso personal, privado y no lucrativo, absteniéndose de realizar sobre los mismos cualquier acto de descompilación, ingeniería inversa, modificación, divulgación o suministro.
+Cualquier otro uso o explotación de cualesquiera contenidos y/u otros elementos insertados en la Aplicación distinto de los aquí expresamente previstos estará sujeto a la autorización previa de WAND.
+
+5. EXCLUSIÓN DE GARANTÍAS Y RESPONSABILIDAD
+
+WAND no garantiza la disponibilidad y continuidad del funcionamiento de la Aplicación. En consecuencia, WAND no será en ningún caso responsable por cualesquiera daños y perjuicios que puedan derivarse de (i) la falta de disponibilidad o accesibilidad a la Aplicación; (ii) la interrupción en el funcionamiento de la Aplicación o fallos informáticos, averías telefónicas, desconexiones, retrasos o bloqueos causados por deficiencias o sobrecargas en las líneas telefónicas, centros de datos, en el sistema de Internet o en otros sistemas electrónicos, producidos en el curso de su funcionamiento; y (iii) otros daños que puedan ser causados por terceros mediante intromisiones no autorizadas ajenas al control de WAND.
+
+WAND no garantiza la ausencia de virus ni de otros elementos en la Aplicación introducidos por terceros ajenos a WAND que puedan producir alteraciones en los sistemas físicos o lógicos del Usuario o en los documentos electrónicos y ficheros almacenados en sus sistemas. En consecuencia, WAND no será en ningún caso responsable de cualesquiera daños y perjuicios de toda naturaleza que pudieran derivarse de la presencia de virus u otros elementos que puedan producir alteraciones en los sistemas físicos o lógicos, documentos electrónicos o ficheros del Usuario.
+
+WAND adopta diversas medidas de protección para proteger la Aplicación y los contenidos contra ataques informáticos de terceros. No obstante, WAND no garantiza que terceros no autorizados no puedan conocer las condiciones, características y circunstancias en las cuales el Usuario accede a la Aplicación. En consecuencia, WAND no será en ningún caso responsable de los daños y perjuicios que pudieran derivarse de dicho acceso no autorizado.
+
+Con la suscripción de las presentes Condiciones Generales de Uso, usted declara que sacará en paz y a salvo de cualquier reclamación a WAND, su sociedad matriz, filiales, subsidiarias directores, socios, empleados, abogados y agentes derivadas del (i) incumplimiento por parte del Usuario de cualquier disposición contenida las presentes Condiciones Generales de Uso o de cualquier ley o regulación aplicable a las mismas, (ii) incumplimiento o violación de los derechos de terceros incluyendo, a título meramente enunciativo.
+
+6. CESIÓN
+
+El Usuario no podrá ceder sus derechos y obligaciones de las presentes Condiciones Generales de Uso sin el previo consentimiento escrito de WAND. WAND podrá ceder, sin necesidad de recabar el consentimiento previo del Usuario, las presentes Condiciones Generales de Uso a cualquier entidad comprendida dentro de su grupo de sociedades, en todo el mundo, así como a cualquier persona o entidad que le suceda en el ejercicio de su negocio por cualesquiera títulos.	
+
+7. LEY APLICABLE Y JURISDICCIÓN
+
+Las presentes Condiciones Generales de Uso, así como la relación entre WAND y el Usuario, se regirán e interpretarán con arreglo las leyes de los Estados Unidos Mexicanos. Las partes acuerdan someterse a la jurisdicción exclusiva de los juzgados y tribunales de la Ciudad de Colima, Colima para la interpretación o controversia derivada de las presentes Condiciones Generales de Uso o la relación entre las mismas.

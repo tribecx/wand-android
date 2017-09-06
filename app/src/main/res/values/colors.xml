@@ -2,18 +2,23 @@
 <resources>
     <color name="colorPrimary">#662483</color>
     <color name="colorPrimaryDark">#571a72</color>
-    <color name="colorAccent">#ffffff</color>
+    <color name="colorAccent">#009688</color>
 
     <!-- basic colors -->
     <color name="purple">#662483</color>
     <color name="purple_dark">#571a72</color>
     <color name="violet">#a63483</color>
     <color name="violet_transparent">#80a63483</color>
+    <color name="blueberry">#65519d</color>
     <color name="blue_dark">#29235c</color>
     <color name="white">#ffffff</color>
     <color name="white_transparent">#80ffffff</color>
+    <color name="gray_light">#e8e8e8</color>
+    <color name="green">#52BC79</color>
 
     <!-- text colors -->
     <color name="text_color_white">#ffffff</color>
     <color name="text_color_black">#000000</color>
+    <color name="text_color_purple">#662483</color>
+    <color name="text_color_green">#52BC79</color>
 </resources>
