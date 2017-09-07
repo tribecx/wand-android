@@ -9,8 +9,13 @@
     <string name="label_add_device">Añadir dispositivo</string>
     <string name="label_lock">Bloquear</string>
     <string name="label_activate">Activar</string>
+    <string name="label_enable">Habilitar</string>
     <string name="label_of">de %1$s</string>
     <string name="label_cancel">Cancelar</string>
+
+    <!-- strings related to splash activity -->
+    <string name="label_wand_need_access_to_some_permissons">Para que Wand funcione adecuadamente necesitaremos acceso a algunos permisos de tu teléfono.</string>
+    <string name="warning_can_not_scan_without_location_permission">Wand no puede escanear dispositivos sin este permiso.</string>
 
     <!-- strings related to onboarding activity -->
     <string name="label_onboarding_section_0">Wand es una plataforma\ndigital para controlar tus cosas</string>
@@ -21,9 +26,11 @@
     <!-- strings related to main activity -->
     <string name="warning_disable_bluetooth_title">Activa el bluetooth</string>
     <string name="warning_disable_bluetooth_message">Wand es una aplicación que utiliza la tecnología bluetooth para su funcionamiento. Actívalo si quieres usar todo su potencial.</string>
+    <string name="warning_disable_gps_message">Wand es una aplicación que utiliza el GPS para su funcionamiento. Actívalo si quieres usar todo su potencial.</string>
 
     <!-- strings related to add device activity -->
     <string name="label_looking_devices">Buscando\ndispositivos</string>
+    <string name="label_new_device">Dispositivo nuevo</string>
 
     <!-- strings related to settings screen -->
     <string name="label_information_config">Información</string>
