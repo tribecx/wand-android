@@ -16,7 +16,6 @@ import android.view.View;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.adapters.WandDevicesAdapter;
-import com.tunashields.wand.models.WandDevice;
 
 public class MainActivity extends AppCompatActivity {
 

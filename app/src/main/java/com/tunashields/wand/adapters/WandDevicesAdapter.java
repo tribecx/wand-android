@@ -1,5 +1,6 @@
 package com.tunashields.wand.adapters;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,14 +19,17 @@ import java.util.ArrayList;
  * Created by Irvin on 8/31/17.
  */
 
-public class WandDevicesAdapter extends RecyclerView.Adapter<WandDevicesAdapter.ViewHolder> {
+public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int TYPE_OWN_DEVICE = 0;
+    private static final int TYPE_NEW_DEVICE = 1;
 
     private Context mContext;
-    private ArrayList<WandDevice> mWandDevices;
+    private ArrayList<Object> mItems;
 
     public WandDevicesAdapter(Context mContext) {
         this.mContext = mContext;
-        mWandDevices = new ArrayList<>();
+        mItems = new ArrayList<>();
     }
 
     @Override
@@ -34,8 +38,41 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<WandDevicesAdapter.
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        WandDevice wandDevice = mWandDevices.get(position);
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        switch (getItemViewType(position)) {
+            case TYPE_OWN_DEVICE:
+                bindWandViewHolder((ViewHolder) holder, (WandDevice) mItems.get(position));
+                break;
+            case TYPE_NEW_DEVICE:
+                bindWandViewHolder((ViewHolder) holder, (BluetoothDevice) mItems.get(position));
+                break;
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        Object item = mItems.get(position);
+        if (item instanceof WandDevice) {
+            return TYPE_OWN_DEVICE;
+        } else if (item instanceof BluetoothDevice) {
+            return TYPE_NEW_DEVICE;
+        }
+        throw new IllegalArgumentException("Unknown view type");
+    }
+
+    @Override
+    public int getItemCount() {
+        return mItems.size();
+    }
+
+    private void bindWandViewHolder(ViewHolder holder, BluetoothDevice bluetoothDevice) {
+        holder.mWandDeviceImageView.setImageResource(bluetoothDevice.getName().equals("Wand-Auto\r\n") ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
+        holder.mWandDeviceNameView.setText(bluetoothDevice.getName());
+        holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_new_device));
+        holder.mStatusDeviceButton.setVisibility(View.GONE);
+    }
+
+    private void bindWandViewHolder(ViewHolder holder, WandDevice wandDevice) {
         holder.mWandDeviceImageView.setImageResource(wandDevice.type.equals("car") ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
         holder.mWandDeviceNameView.setText(wandDevice.name);
         holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_of, wandDevice.owner));
@@ -47,12 +84,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<WandDevicesAdapter.
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return mWandDevices.size();
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
+    private class ViewHolder extends RecyclerView.ViewHolder {
         ImageView mWandDeviceImageView;
         TextView mWandDeviceNameView;
         TextView mWandDeviceOwnerView;
@@ -67,13 +99,17 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<WandDevicesAdapter.
         }
     }
 
-    public void add(WandDevice wandDevice) {
-        mWandDevices.add(wandDevice);
+    public void add(Object object) {
+        mItems.add(object);
         notifyDataSetChanged();
     }
 
     public void addAll(ArrayList<WandDevice> wandDevices) {
-        mWandDevices.addAll(wandDevices);
+        mItems.addAll(wandDevices);
         notifyDataSetChanged();
+    }
+
+    public boolean contains(Object object) {
+        return mItems.contains(object);
     }
 }
