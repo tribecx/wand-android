@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/purple"
-    tools:context="com.tunashields.wand.activities.AddDeviceActivity">
+    tools:context="com.tunashields.wand.activities.DeviceScanActivity">
 
     <TextView
         android:id="@+id/textView2"
@@ -20,9 +20,9 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/image_looking_devices"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:id="@+id/image_looking_devices_progress"
+        android:layout_width="48dp"
+        android:layout_height="49dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -44,7 +44,7 @@
         android:textSize="@dimen/text_size_small"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/image_looking_devices" />
+        app:layout_constraintTop_toBottomOf="@+id/image_looking_devices_progress" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_add_device"
@@ -62,6 +62,17 @@
         app:layout_constraintTop_toBottomOf="@+id/text_looking_devices"
         tools:listitem="@layout/item_wand_device" />
 
+    <TextView
+        android:id="@+id/text_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="0dp"
+        android:textColor="@color/text_color_white"
+        android:textSize="@dimen/text_size_medium"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
     <Button
         android:id="@+id/button_cancel"
         style="@style/VioletButton"
@@ -69,6 +80,7 @@
         android:layout_height="30dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
+        android:onClick="cancel"
         android:text="@string/label_cancel"
         android:textSize="@dimen/text_size_normal"
         app:layout_constraintBottom_toBottomOf="parent"

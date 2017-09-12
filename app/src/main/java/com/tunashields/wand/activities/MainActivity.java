@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startAddDeviceActivity(View view) {
-        startActivity(new Intent(MainActivity.this, AddDeviceActivity.class));
+        startActivity(new Intent(MainActivity.this, DeviceScanActivity.class));
     }
 
     public void startSettingsActivity(View view) {

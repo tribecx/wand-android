@@ -12,9 +12,10 @@
     <string name="label_enable">Habilitar</string>
     <string name="label_of">de %1$s</string>
     <string name="label_cancel">Cancelar</string>
+    <string name="label_advertisement">Aviso</string>
 
     <!-- strings related to splash activity -->
-    <string name="label_wand_need_access_to_some_permissons">Para que Wand funcione adecuadamente necesitaremos acceso a algunos permisos de tu teléfono.</string>
+    <string name="prompt_wand_need_access_to_some_permissons">Para que Wand funcione adecuadamente necesitaremos acceso a algunos permisos de tu teléfono.</string>
     <string name="warning_can_not_scan_without_location_permission">Wand no puede escanear dispositivos sin este permiso.</string>
 
     <!-- strings related to onboarding activity -->
@@ -31,6 +32,11 @@
     <!-- strings related to add device activity -->
     <string name="label_looking_devices">Buscando\ndispositivos</string>
     <string name="label_new_device">Dispositivo nuevo</string>
+    <string name="label_insert_manual_code">Introduce el código incluído en el\nmanual del dispositivo</string>
+    <string name="prompt_detected_new_device_will_start_configuration">Detectamos que es un dispositivo nuevo, comenzaremos con la configuración</string>
+    <string name="prompt_linking_device">Enlazando\ndispositivo</string>
+    <string name="prompt_link_error">Error en el enlace</string>
+    <string name="prompt_correctly_added_device">Dispositivo añadido correctamente</string>
 
     <!-- strings related to settings screen -->
     <string name="label_information_config">Información</string>

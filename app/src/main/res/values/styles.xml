@@ -32,4 +32,10 @@
         <item name="android:textColor">@color/text_color_white</item>
     </style>
 
+    <style name="EditText">
+        <item name="android:background">@drawable/background_edittext</item>
+        <item name="android:textColor">@color/text_color_black</item>
+        <item name="android:textSize">@dimen/text_size_normal</item>
+    </style>
+
 </resources>

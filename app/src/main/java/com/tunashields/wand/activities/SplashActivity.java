@@ -24,7 +24,7 @@ public class SplashActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(SplashActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(SplashActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(getString(R.string.label_wand_need_access_to_some_permissons));
+                builder.setMessage(getString(R.string.prompt_wand_need_access_to_some_permissons));
                 builder.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {

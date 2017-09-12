@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.tunashields.wand.R;
+import com.tunashields.wand.bluetooth.WandAttributes;
 import com.tunashields.wand.models.WandDevice;
 
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private Context mContext;
     private ArrayList<Object> mItems;
+
+    OnItemClickListener mOnItemClickListener;
 
     public WandDevicesAdapter(Context mContext) {
         this.mContext = mContext;
@@ -66,7 +69,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void bindWandViewHolder(ViewHolder holder, BluetoothDevice bluetoothDevice) {
-        holder.mWandDeviceImageView.setImageResource(bluetoothDevice.getName().equals("Wand-Auto\r\n") ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
+        holder.mWandDeviceImageView.setImageResource(bluetoothDevice.getName().equals(WandAttributes.WAND_CAR_DEFAULT_NAME) ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
         holder.mWandDeviceNameView.setText(bluetoothDevice.getName());
         holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_new_device));
         holder.mStatusDeviceButton.setVisibility(View.GONE);
@@ -84,7 +87,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    private class ViewHolder extends RecyclerView.ViewHolder {
+    private class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ImageView mWandDeviceImageView;
         TextView mWandDeviceNameView;
         TextView mWandDeviceOwnerView;
@@ -92,10 +95,18 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         ViewHolder(View itemView) {
             super(itemView);
+            itemView.setOnClickListener(this);
             mWandDeviceImageView = itemView.findViewById(R.id.image_wand_device_type);
             mWandDeviceNameView = itemView.findViewById(R.id.text_wand_device_name);
             mWandDeviceOwnerView = itemView.findViewById(R.id.text_wand_device_owner);
             mStatusDeviceButton = itemView.findViewById(R.id.button_wand_device_state);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (mOnItemClickListener != null) {
+                mOnItemClickListener.onItemClick((BluetoothDevice) mItems.get(getAdapterPosition()));
+            }
         }
     }
 
@@ -111,5 +122,13 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     public boolean contains(Object object) {
         return mItems.contains(object);
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(BluetoothDevice bluetoothDevice);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
+        this.mOnItemClickListener = mOnItemClickListener;
     }
 }
