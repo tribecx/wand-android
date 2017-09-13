@@ -69,7 +69,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void bindWandViewHolder(ViewHolder holder, BluetoothDevice bluetoothDevice) {
-        holder.mWandDeviceImageView.setImageResource(bluetoothDevice.getName().equals(WandAttributes.WAND_CAR_DEFAULT_NAME) ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
+        holder.mWandDeviceImageView.setImageResource(bluetoothDevice.getName().equals(WandAttributes.CAR_DEFAULT_NAME) ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
         holder.mWandDeviceNameView.setText(bluetoothDevice.getName());
         holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_new_device));
         holder.mStatusDeviceButton.setVisibility(View.GONE);

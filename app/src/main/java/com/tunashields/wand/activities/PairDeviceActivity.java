@@ -73,10 +73,16 @@ public class PairDeviceActivity extends AppCompatActivity {
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-        if (mDeviceName.contains(WandAttributes.WAND_NEW_DEVICE_KEY)) {
+        if (mDeviceName.contains(WandAttributes.NEW_DEVICE_KEY)) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(getString(R.string.label_advertisement));
             builder.setMessage(getString(R.string.prompt_detected_new_device_will_start_configuration));
+            builder.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    finish();
+                }
+            });
             builder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {

@@ -90,7 +90,7 @@ public class BluetoothLeService extends Service {
             if (mCustomService != null) {
                 BluetoothGattCharacteristic characteristic = mCustomService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
                 mBluetoothGatt.setCharacteristicNotification(characteristic, true);
-                BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(WandAttributes.CHARACTERISTIC_NOTIFICATIONS));
+                BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
                 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 mBluetoothGatt.writeDescriptor(descriptor);
             }
@@ -195,7 +195,7 @@ public class BluetoothLeService extends Service {
         }
 
         // Previously connected device.  Try to reconnect.
-        if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
+        /*if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
             L.debug("Trying to use an existing mBluetoothGatt for connection.");
             if (mBluetoothGatt.connect()) {
@@ -204,7 +204,7 @@ public class BluetoothLeService extends Service {
             } else {
                 return false;
             }
-        }
+        }*/
 
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if (device == null) {

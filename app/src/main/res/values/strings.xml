@@ -13,6 +13,7 @@
     <string name="label_of">de %1$s</string>
     <string name="label_cancel">Cancelar</string>
     <string name="label_advertisement">Aviso</string>
+    <string name="label_next">Siguiente</string>
 
     <!-- strings related to splash activity -->
     <string name="prompt_wand_need_access_to_some_permissons">Para que Wand funcione adecuadamente necesitaremos acceso a algunos permisos de tu teléfono.</string>
@@ -37,6 +38,13 @@
     <string name="prompt_linking_device">Enlazando\ndispositivo</string>
     <string name="prompt_link_error">Error en el enlace</string>
     <string name="prompt_correctly_added_device">Dispositivo añadido correctamente</string>
+    <string name="prompt_configuring">Configurando…</string>
+    <string name="label_assign_name">Asignar nombre</string>
+    <string name="label_assign_owner">Asignar propietario</string>
+    <string name="label_assign_password">Asignar contraseña</string>
+    <string name="label_for_your_safety_customize_your_device">Por tu seguridad, debes asignar un nombre, dueño y contraseña nuevos a tu dispositivo</string>
+    <string name="error_empty_field">Este campo no puede estar vacío</string>
+    <string name="error_invalid_password">La contraseña debe ser de 5 dígitos</string>
 
     <!-- strings related to settings screen -->
     <string name="label_information_config">Información</string>

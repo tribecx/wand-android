@@ -36,9 +36,13 @@
     </style>
 
     <style name="EditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">35dp</item>
         <item name="android:background">@drawable/background_edittext</item>
         <item name="android:textColor">@color/text_color_black</item>
         <item name="android:textSize">@dimen/text_size_normal</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingStart">16dp</item>
     </style>
 
 </resources>

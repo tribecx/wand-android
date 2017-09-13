@@ -196,7 +196,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
             BluetoothGattCharacteristic characteristic = services.get(4).getCharacteristics().get(0);
             gatt.setCharacteristicNotification(characteristic, true);
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(WandAttributes.CHARACTERISTIC_NOTIFICATIONS));
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             gatt.writeDescriptor(descriptor);
 
