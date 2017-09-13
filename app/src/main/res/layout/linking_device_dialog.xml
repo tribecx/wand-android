@@ -38,12 +38,9 @@
     <Button
         android:id="@+id/button_cancel"
         style="@style/VioletButton"
-        android:layout_width="150dp"
-        android:layout_height="30dp"
         android:layout_marginBottom="0dp"
         android:layout_marginTop="0dp"
         android:text="@string/label_cancel"
-        android:textSize="@dimen/text_size_normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
