@@ -27,6 +27,7 @@ public class OnboardingFragment extends Fragment {
     private int sectionNumber;
 
     public OnboardingFragment() {
+        // Required empty public constructor
     }
 
     /**

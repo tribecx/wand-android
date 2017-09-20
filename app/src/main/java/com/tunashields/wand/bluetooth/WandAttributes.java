@@ -13,7 +13,7 @@ public class WandAttributes {
     public static String WAND_CHARACTERISTIC = "0000ffe1-0000-1000-8000-00805f9b34fb";
 
     /**
-     * UUID used to configure BLE notification responses
+     * UUID used to configure BLE notifications
      */
     public static String CLIENT_CHARACTERISTIC_CONFIGURATION = "00002902-0000-1000-8000-00805f9b34fb";
 
@@ -28,9 +28,9 @@ public class WandAttributes {
      * Wand protocol responses
      */
     public static final String DETECT_NEW_CONNECTION = "#P@";
-    public static final String DEFAULT_PASSWORD_OK = "#P:OK@";
-    public static final String DEFAULT_PASSWORD_ERROR = "#P:NO@";
-    public static final String NAME_OK = "#N:OK@";
-    public static final String PASSWORD_OK = "#C:OK@";
-    public static final String PASSWORD_NO = "#C:NO@";
+    public static final String ENTER_PASSWORD_OK = "#P:OK@";
+    public static final String ENTER_PASSWORD_ERROR = "#P:NO@";
+    public static final String CHANGE_NAME_OK = "#N:OK@";
+    public static final String CHANGE_PASSWORD_OK = "#C:OK@";
+    public static final String CHANGE_PASSWORD_ERROR = "#C:NO@";
 }

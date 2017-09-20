@@ -45,4 +45,10 @@
         <item name="android:paddingStart">16dp</item>
     </style>
 
+    <style name="FullScreenDialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
 </resources>

@@ -2,49 +2,51 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/linking_device_dialog"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/purple">
 
     <ImageView
-        android:id="@+id/image_progress"
+        android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
         android:layout_marginTop="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.15"
-        app:srcCompat="@drawable/ic_progress_bar"
+        app:layout_constraintVertical_bias="0.25"
+        app:srcCompat="@drawable/ic_error"
         tools:ignore="ContentDescription" />
 
     <TextView
-        android:id="@+id/text_progress_message"
+        android:id="@+id/text_error_dialog_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="32dp"
         android:textAlignment="center"
         android:textColor="@color/text_color_white"
         android:textSize="@dimen/text_size_medium"
+        android:text="@string/error_link"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/image_progress" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
-    <Button
-        android:id="@+id/button_cancel"
-        style="@style/VioletButton"
-        android:layout_marginBottom="0dp"
-        android:layout_marginTop="0dp"
-        android:text="@string/label_cancel"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_tips"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/ic_question_mark"
+        app:backgroundTint="@color/violet"
+        app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.45" />
+        app:layout_constraintVertical_bias="0.9" />
 
 </android.support.constraint.ConstraintLayout>

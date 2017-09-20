@@ -25,6 +25,10 @@ public class AssignPasswordFragment extends Fragment {
 
     private AssignPasswordListener mAssignPasswordListener;
 
+    public AssignPasswordFragment() {
+        // Required empty public constructor
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

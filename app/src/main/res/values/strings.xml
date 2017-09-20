@@ -36,7 +36,7 @@
     <string name="label_insert_manual_code">Introduce el código incluído en el\nmanual del dispositivo</string>
     <string name="prompt_detected_new_device_will_start_configuration">Detectamos que es un dispositivo nuevo, comenzaremos con la configuración</string>
     <string name="prompt_linking_device">Enlazando\ndispositivo</string>
-    <string name="prompt_link_error">Error en el enlace</string>
+    <string name="error_link">Error en el enlace</string>
     <string name="prompt_correctly_added_device">Dispositivo añadido correctamente</string>
     <string name="prompt_configuring">Configurando…</string>
     <string name="label_assign_name">Asignar nombre</string>
@@ -45,6 +45,7 @@
     <string name="label_for_your_safety_customize_your_device">Por tu seguridad, debes asignar un nombre, dueño y contraseña nuevos a tu dispositivo</string>
     <string name="error_empty_field">Este campo no puede estar vacío</string>
     <string name="error_invalid_password">La contraseña debe ser de 5 dígitos</string>
+    <string name="label_name_and_owner_added_properly">Nombre, propietario y contraseña\nañadidos correctamente</string>
 
     <!-- strings related to settings screen -->
     <string name="label_information_config">Información</string>

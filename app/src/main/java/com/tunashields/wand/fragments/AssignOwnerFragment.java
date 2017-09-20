@@ -26,6 +26,10 @@ public class AssignOwnerFragment extends Fragment {
 
     private AssignOwnerListener mAssignOwnerListener;
 
+    public AssignOwnerFragment() {
+        // Required empty public constructor
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

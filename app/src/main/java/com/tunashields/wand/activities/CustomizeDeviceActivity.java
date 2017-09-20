@@ -12,11 +12,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
@@ -24,7 +19,10 @@ import com.tunashields.wand.bluetooth.WandAttributes;
 import com.tunashields.wand.fragments.AssignNameFragment;
 import com.tunashields.wand.fragments.AssignOwnerFragment;
 import com.tunashields.wand.fragments.AssignPasswordFragment;
+import com.tunashields.wand.fragments.DoneDialogFragment;
+import com.tunashields.wand.fragments.ProgressDialogFragment;
 import com.tunashields.wand.utils.L;
+import com.tunashields.wand.utils.WandUtils;
 
 public class CustomizeDeviceActivity extends AppCompatActivity
         implements AssignNameFragment.AssignNameListener, AssignOwnerFragment.AssignOwnerListener, AssignPasswordFragment.AssignPasswordListener {
@@ -40,6 +38,10 @@ public class CustomizeDeviceActivity extends AppCompatActivity
     private String mCustomName = null;
     private String mCustomOwner = null;
     private String mCustomPassword = null;
+
+    private String mStatus = null;
+
+    private ProgressDialogFragment mProgressDialogFragment;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -72,7 +74,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 L.debug(data);
-                customize(data);
+                processData(data);
             }
         }
     };
@@ -98,7 +100,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-        showLinkingDialog(true);
+        showProgressDialog(getString(R.string.prompt_linking_device));
     }
 
     @Override
@@ -134,24 +136,36 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void customize(String data) {
+    private void processData(String data) {
         switch (data) {
             case WandAttributes.DETECT_NEW_CONNECTION:
-                mBluetoothLeService.writeCharacteristic(WandAttributes.DEFAULT_PASSWORD);
+                if (mStatus == null) {
+                    mStatus = WandAttributes.DETECT_NEW_CONNECTION;
+                    mBluetoothLeService.writeCharacteristic(WandAttributes.DEFAULT_PASSWORD);
+                } else if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
+                    mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(mCustomPassword));
+                }
                 break;
-            case WandAttributes.DEFAULT_PASSWORD_OK:
-                showLinkingDialog(false);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.layout_customize_device_content, new AssignNameFragment())
-                        .commit();
+            case WandAttributes.ENTER_PASSWORD_OK:
+                if (mStatus.equals(WandAttributes.DETECT_NEW_CONNECTION)) {
+                    mStatus = WandAttributes.ENTER_PASSWORD_OK;
+                    dismissProgressDialog();
+                    showAssignNameFragment();
+                } else if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
+                    configureNameAndOwner();
+                }
                 break;
-            case WandAttributes.NAME_OK:
-                configurePassword();
+            case WandAttributes.CHANGE_PASSWORD_OK:
+                if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
+                    mStatus = WandAttributes.CHANGE_PASSWORD_OK;
+                    configureNameAndOwner();
+                }
                 break;
-            case WandAttributes.PASSWORD_OK:
-                Toast.makeText(CustomizeDeviceActivity.this, "Dispositivo configurado correctamente", Toast.LENGTH_LONG).show();
-                showConfiguringDialog(false);
-                finish();
+            case WandAttributes.CHANGE_NAME_OK:
+                if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
+                    dismissProgressDialog();
+                    showDoneDialog();
+                }
                 break;
         }
     }
@@ -160,37 +174,50 @@ public class CustomizeDeviceActivity extends AppCompatActivity
     public void onAssignName(String name) {
         L.debug(name);
         mCustomName = name;
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.layout_customize_device_content, new AssignOwnerFragment())
-                .addToBackStack(null)
-                .commit();
+        showAssignOwnerFragment();
     }
 
     @Override
     public void onAssignOwner(String owner) {
         L.debug(owner);
         mCustomOwner = owner;
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.layout_customize_device_content, new AssignPasswordFragment())
-                .addToBackStack(null)
-                .commit();
+        showAssignPasswordFragment();
     }
 
     @Override
     public void onAssignPassword(String password) {
         L.debug(password);
         mCustomPassword = password;
-        showConfiguringDialog(true);
-        configureNameAndOwner();
+        showProgressDialog(getString(R.string.prompt_configuring));
+        configurePassword();
+    }
+
+    private void showAssignNameFragment() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.layout_customize_device_content, new AssignNameFragment())
+                .commit();
+    }
+
+    private void showAssignOwnerFragment() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.layout_customize_device_content, new AssignOwnerFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void showAssignPasswordFragment() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.layout_customize_device_content, new AssignPasswordFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
     private void configureNameAndOwner() {
-        String name_owner = "#N" + mCustomName + "-" + mCustomOwner + "@";
-        mBluetoothLeService.writeCharacteristic(name_owner);
+        mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameOwnerFormat(mCustomName, mCustomOwner));
     }
 
     private void configurePassword() {
-        mBluetoothLeService.writeCharacteristic(mCustomPassword);
+        mBluetoothLeService.writeCharacteristic(WandUtils.setChangePasswordFormat(mCustomPassword));
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -202,31 +229,21 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         return intentFilter;
     }
 
-    private void showLinkingDialog(boolean value) {
-        Animation animation = AnimationUtils.loadAnimation(CustomizeDeviceActivity.this, R.anim.rotate);
-        findViewById(R.id.image_progress).setAnimation(value ? animation : null);
-        ((TextView) findViewById(R.id.text_progress_message)).setText(getString(R.string.prompt_linking_device));
-        findViewById(R.id.button_cancel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-        findViewById(R.id.linking_device_dialog).setVisibility(value ? View.VISIBLE : View.GONE);
-        findViewById(R.id.layout_customize_device_content).setVisibility(value ? View.GONE : View.VISIBLE);
+    private void showProgressDialog(String message) {
+        mProgressDialogFragment = ProgressDialogFragment.newInstance(message);
+        mProgressDialogFragment.setCancelable(false);
+        mProgressDialogFragment.show(getSupportFragmentManager(), "progress_dialog");
     }
 
-    private void showConfiguringDialog(boolean value) {
-        Animation animation = AnimationUtils.loadAnimation(CustomizeDeviceActivity.this, R.anim.rotate);
-        findViewById(R.id.image_progress).setAnimation(value ? animation : null);
-        ((TextView) findViewById(R.id.text_progress_message)).setText(getString(R.string.prompt_configuring));
-        findViewById(R.id.button_cancel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-        findViewById(R.id.linking_device_dialog).setVisibility(value ? View.VISIBLE : View.GONE);
-        findViewById(R.id.layout_customize_device_content).setVisibility(value ? View.GONE : View.VISIBLE);
+    private void dismissProgressDialog() {
+        if (mProgressDialogFragment != null) {
+            mProgressDialogFragment.dismiss();
+        }
+    }
+
+    private void showDoneDialog() {
+        DoneDialogFragment mDoneDialogFragment = DoneDialogFragment.newInstance(getString(R.string.label_name_and_owner_added_properly));
+        mDoneDialogFragment.setCancelable(false);
+        mDoneDialogFragment.show(getSupportFragmentManager(), "done_dialog");
     }
 }
