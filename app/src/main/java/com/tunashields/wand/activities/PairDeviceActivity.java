@@ -11,11 +11,21 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
 import com.tunashields.wand.bluetooth.WandAttributes;
+import com.tunashields.wand.fragments.DoneDialogFragment;
+import com.tunashields.wand.fragments.ErrorDialogFragment;
+import com.tunashields.wand.fragments.ProgressDialogFragment;
 import com.tunashields.wand.utils.L;
+import com.tunashields.wand.utils.WandUtils;
 
 public class PairDeviceActivity extends AppCompatActivity {
 
@@ -24,6 +34,10 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private String mDeviceName;
     private String mDeviceAddress;
+
+    private EditText mEnterPasswordView;
+
+    private ProgressDialogFragment mProgressDialogFragment;
 
     private BluetoothLeService mBluetoothLeService;
 
@@ -56,7 +70,9 @@ public class PairDeviceActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                L.debug(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+                L.debug(data);
+                processData(data);
             }
         }
     };
@@ -74,27 +90,9 @@ public class PairDeviceActivity extends AppCompatActivity {
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         if (mDeviceName.contains(WandAttributes.NEW_DEVICE_KEY)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(getString(R.string.label_advertisement));
-            builder.setMessage(getString(R.string.prompt_detected_new_device_will_start_configuration));
-            builder.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    finish();
-                }
-            });
-            builder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    Intent intent = new Intent(PairDeviceActivity.this, CustomizeDeviceActivity.class);
-                    intent.putExtra(CustomizeDeviceActivity.EXTRA_DEVICE_NAME, mDeviceName);
-                    intent.putExtra(CustomizeDeviceActivity.EXTRA_DEVICE_ADDRESS, mDeviceAddress);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.setCancelable(false);
-            builder.create().show();
+            showAddDeviceDialog();
+        } else {
+            showPairDeviceScreen();
         }
     }
 
@@ -121,6 +119,65 @@ public class PairDeviceActivity extends AppCompatActivity {
         mBluetoothLeService = null;
     }
 
+    private void showAddDeviceDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.label_advertisement));
+        builder.setMessage(getString(R.string.prompt_detected_new_device_will_start_configuration));
+        builder.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        builder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(PairDeviceActivity.this, CustomizeDeviceActivity.class);
+                intent.putExtra(CustomizeDeviceActivity.EXTRA_DEVICE_NAME, mDeviceName);
+                intent.putExtra(CustomizeDeviceActivity.EXTRA_DEVICE_ADDRESS, mDeviceAddress);
+                startActivity(intent);
+                finish();
+            }
+        });
+        builder.setCancelable(false);
+        builder.create().show();
+    }
+
+    private void showPairDeviceScreen() {
+        mEnterPasswordView = (EditText) findViewById(R.id.edit_enter_password);
+        mEnterPasswordView.requestFocus();
+        mEnterPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == EditorInfo.IME_ACTION_GO) {
+                    sendPassword();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        findViewById(R.id.button_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+    }
+
+    private void processData(String data) {
+        switch (data) {
+            case WandAttributes.ENTER_PASSWORD_OK:
+                dismissProgressDialog();
+                showDoneDialog();
+                break;
+            case WandAttributes.ENTER_PASSWORD_ERROR:
+                dismissProgressDialog();
+                showErrorDialog();
+                break;
+        }
+    }
+
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
@@ -128,5 +185,44 @@ public class PairDeviceActivity extends AppCompatActivity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
+    }
+
+    private void sendPassword() {
+        if (mEnterPasswordView == null) return;
+
+        String password = mEnterPasswordView.getText().toString();
+
+        if (TextUtils.isEmpty(password)) {
+            mEnterPasswordView.setText(getString(R.string.error_empty_field));
+            mEnterPasswordView.requestFocus();
+            return;
+        }
+
+        showProgressDialog(getString(R.string.prompt_linking_device));
+
+        mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(password));
+    }
+
+    private void showProgressDialog(String message) {
+        mProgressDialogFragment = ProgressDialogFragment.newInstance(message);
+        mProgressDialogFragment.setCancelable(false);
+        mProgressDialogFragment.show(getSupportFragmentManager(), "progress_dialog");
+    }
+
+    private void dismissProgressDialog() {
+        if (mProgressDialogFragment != null) {
+            mProgressDialogFragment.dismiss();
+        }
+    }
+
+    private void showDoneDialog() {
+        DoneDialogFragment mDoneDialogFragment = DoneDialogFragment.newInstance(getString(R.string.label_device_added_correctly));
+        mDoneDialogFragment.setCancelable(false);
+        mDoneDialogFragment.show(getSupportFragmentManager(), "done_dialog");
+    }
+
+    private void showErrorDialog() {
+        ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
+        mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
     }
 }

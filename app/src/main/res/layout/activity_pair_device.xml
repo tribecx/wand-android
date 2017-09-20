@@ -35,7 +35,9 @@
         <EditText
             android:id="@+id/edit_enter_password"
             style="@style/EditText"
+            android:imeOptions="actionGo"
             android:inputType="numberPassword"
+            android:maxLength="5"
             tools:ignore="LabelFor" />
 
     </android.support.design.widget.TextInputLayout>

@@ -33,10 +33,20 @@
     <!-- strings related to add device activity -->
     <string name="label_looking_devices">Buscando\ndispositivos</string>
     <string name="label_new_device">Dispositivo nuevo</string>
+
+    <!-- strings related to pair device activity -->
     <string name="label_insert_manual_code">Introduce el código incluído en el\nmanual del dispositivo</string>
     <string name="prompt_detected_new_device_will_start_configuration">Detectamos que es un dispositivo nuevo, comenzaremos con la configuración</string>
-    <string name="prompt_linking_device">Enlazando\ndispositivo</string>
+    <string name="label_device_added_correctly">Dispositivo añadido\ncorrectamente</string>
     <string name="error_link">Error en el enlace</string>
+    <string name="label_tips">Tips</string>
+    <string name="label_tip_close">Asegúrese de encontrarse cerca del dispositivo Wand, máximo 10m.</string>
+    <string name="label_tip_reset_bluetooth">Si la conexión no se logró, deshabilite el bluetooth y habilitelo de nuevo.</string>
+    <string name="label_tip_password">Si no hay conexión la contraseña fue incorrecta intente de nuevo (Si la contraseña es incorrecta Wand te desconecta automáticamente).</string>
+    <string name="label_tip_connection">Si Wand no es localizado por la lista de los dispositivos verificar que se encuentre conectado a corriente.</string>
+
+    <!-- strings related to customize device activity -->
+    <string name="prompt_linking_device">Enlazando\ndispositivo</string>
     <string name="prompt_correctly_added_device">Dispositivo añadido correctamente</string>
     <string name="prompt_configuring">Configurando…</string>
     <string name="label_assign_name">Asignar nombre</string>

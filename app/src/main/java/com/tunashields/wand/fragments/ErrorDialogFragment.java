@@ -1,6 +1,7 @@
 package com.tunashields.wand.fragments;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -51,7 +52,8 @@ public class ErrorDialogFragment extends DialogFragment {
         mShowTipsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                TipsDialogFragment mTipsDialogFragment = TipsDialogFragment.newInstance();
+                mTipsDialogFragment.show(getActivity().getSupportFragmentManager(), "tips_fragment");
             }
         });
     }
@@ -66,5 +68,11 @@ public class ErrorDialogFragment extends DialogFragment {
             if (dialog.getWindow() != null)
                 dialog.getWindow().setLayout(width, height);
         }
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        getActivity().finish();
     }
 }
