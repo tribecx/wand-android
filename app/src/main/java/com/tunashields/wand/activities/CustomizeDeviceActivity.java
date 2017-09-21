@@ -16,11 +16,13 @@ import android.view.MenuItem;
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
 import com.tunashields.wand.bluetooth.WandAttributes;
+import com.tunashields.wand.data.Database;
 import com.tunashields.wand.fragments.AssignNameFragment;
 import com.tunashields.wand.fragments.AssignOwnerFragment;
 import com.tunashields.wand.fragments.AssignPasswordFragment;
 import com.tunashields.wand.fragments.DoneDialogFragment;
 import com.tunashields.wand.fragments.ProgressDialogFragment;
+import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
 import com.tunashields.wand.utils.WandUtils;
 
@@ -163,8 +165,10 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 break;
             case WandAttributes.CHANGE_NAME_OK:
                 if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
-                    dismissProgressDialog();
-                    showDoneDialog();
+                    if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword))) {
+                        dismissProgressDialog();
+                        showDoneDialog();
+                    }
                 }
                 break;
         }

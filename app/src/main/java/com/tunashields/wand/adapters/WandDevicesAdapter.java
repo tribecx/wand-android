@@ -76,15 +76,17 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void bindWandViewHolder(ViewHolder holder, WandDevice wandDevice) {
-        holder.mWandDeviceImageView.setImageResource(wandDevice.type.equals("car") ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
+        //holder.mWandDeviceImageView.setImageResource(wandDevice.type.equals("car") ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
+        holder.mWandDeviceImageView.setImageResource(R.drawable.ic_wand_car_purple);
         holder.mWandDeviceNameView.setText(wandDevice.name);
         holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_of, wandDevice.owner));
-        holder.mStatusDeviceButton.setBackgroundResource(wandDevice.locked ? R.drawable.background_locked_device_button : R.drawable.background_green_borders_button);
-        if (wandDevice.locked) {
+        //holder.mStatusDeviceButton.setBackgroundResource(wandDevice.locked ? R.drawable.background_locked_device_button : R.drawable.background_green_borders_button);
+        holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_locked_device_button);
+        /*if (wandDevice.locked) {
             holder.mStatusDeviceButton.setText("");
         } else {
             holder.mStatusDeviceButton.setText(wandDevice.type.equals("car") ? R.string.label_lock : R.string.label_activate);
-        }
+        }*/
     }
 
     private class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

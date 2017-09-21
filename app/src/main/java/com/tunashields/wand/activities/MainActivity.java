@@ -16,6 +16,7 @@ import android.view.View;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.adapters.WandDevicesAdapter;
+import com.tunashields.wand.data.Database;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         /*mAdapter.add(new WandDevice("car", "Mustang", "Irvin", false));
         mAdapter.add(new WandDevice("garage", "VMW", "Irvin", true));
         mAdapter.add(new WandDevice("garage", "House Garage", "Irvin", false));*/
+
+        mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
 
         setVisibleLayout(mAdapter.getItemCount() <= 0);
 
