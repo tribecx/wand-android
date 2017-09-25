@@ -32,9 +32,15 @@ public class AssignPasswordFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_assign_password, container, false);
+        return inflater.inflate(R.layout.fragment_assign_password, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         mPasswordView = view.findViewById(R.id.edit_enter_device_password);
+        mPasswordView.requestFocus();
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -52,8 +58,6 @@ public class AssignPasswordFragment extends Fragment {
                 attemptAssignPassword();
             }
         });
-
-        return view;
     }
 
     private void attemptAssignPassword() {

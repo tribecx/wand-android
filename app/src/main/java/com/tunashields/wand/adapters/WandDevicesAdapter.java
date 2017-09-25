@@ -29,6 +29,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private ArrayList<Object> mItems;
 
     OnItemClickListener mOnItemClickListener;
+    OnLockClickListener mOnLockClickListener;
 
     public WandDevicesAdapter(Context mContext) {
         this.mContext = mContext;
@@ -76,17 +77,24 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void bindWandViewHolder(ViewHolder holder, WandDevice wandDevice) {
-        //holder.mWandDeviceImageView.setImageResource(wandDevice.type.equals("car") ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
         holder.mWandDeviceImageView.setImageResource(R.drawable.ic_wand_car_purple);
         holder.mWandDeviceNameView.setText(wandDevice.name);
-        holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_of, wandDevice.owner));
-        //holder.mStatusDeviceButton.setBackgroundResource(wandDevice.locked ? R.drawable.background_locked_device_button : R.drawable.background_green_borders_button);
-        holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_locked_device_button);
-        /*if (wandDevice.locked) {
-            holder.mStatusDeviceButton.setText("");
-        } else {
-            holder.mStatusDeviceButton.setText(wandDevice.type.equals("car") ? R.string.label_lock : R.string.label_activate);
-        }*/
+
+        if (wandDevice.owner != null)
+            holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_of, wandDevice.owner));
+
+        if (wandDevice.mode != null && wandDevice.mode.equals("A")) {
+            holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
+            holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_automatic_lock));
+            return;
+        }
+
+        if (wandDevice.relay == 0) {
+            holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_green_borders_button);
+            holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_lock));
+        } else if (wandDevice.relay == 1) {
+            holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_locked_device_button);
+        }
     }
 
     private class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -107,7 +115,10 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         @Override
         public void onClick(View view) {
             if (mOnItemClickListener != null) {
-                mOnItemClickListener.onItemClick((BluetoothDevice) mItems.get(getAdapterPosition()));
+                if (mItems.get(getAdapterPosition()) instanceof WandDevice)
+                    mOnItemClickListener.onItemClick((WandDevice) mItems.get(getAdapterPosition()));
+                else if (mItems.get(getAdapterPosition()) instanceof BluetoothDevice)
+                    mOnItemClickListener.onItemClick((BluetoothDevice) mItems.get(getAdapterPosition()));
             }
         }
     }
@@ -127,10 +138,20 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     public interface OnItemClickListener {
+        void onItemClick(WandDevice wandDevice);
+
         void onItemClick(BluetoothDevice bluetoothDevice);
+    }
+
+    public interface OnLockClickListener {
+        void onLock(String address, boolean isLocked);
     }
 
     public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
         this.mOnItemClickListener = mOnItemClickListener;
+    }
+
+    public void setOnLockClickListener(OnLockClickListener mOnLockClickListener) {
+        this.mOnLockClickListener = mOnLockClickListener;
     }
 }

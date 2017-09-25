@@ -8,6 +8,7 @@
     <string name="label_settings">Ajustes</string>
     <string name="label_add_device">Añadir dispositivo</string>
     <string name="label_lock">Bloquear</string>
+    <string name="label_automatic_lock">Bloqueo automático</string>
     <string name="label_activate">Activar</string>
     <string name="label_enable">Habilitar</string>
     <string name="label_of">de %1$s</string>

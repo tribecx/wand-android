@@ -26,6 +26,8 @@ import android.widget.Toast;
 import com.tunashields.wand.R;
 import com.tunashields.wand.adapters.WandDevicesAdapter;
 import com.tunashields.wand.bluetooth.WandAttributes;
+import com.tunashields.wand.data.Database;
+import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
 
 import java.util.ArrayList;
@@ -36,6 +38,9 @@ public class DeviceScanActivity extends AppCompatActivity {
     ImageView mProgressView;
     TextView mLookingDevicesView;
 
+    private ArrayList<WandDevice> mPairedDevices;
+    private ArrayList<String> mPairedDevicesAddresses;
+
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
     private BluetoothLeScanner mLeScanner;
@@ -44,8 +49,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private int REQUEST_ENABLE_BT = 1;
     private static final long SCAN_PERIOD = 10000;
-
-    //private BluetoothGatt mBluetoothGatt;
 
     private WandDevicesAdapter mAdapter;
 
@@ -62,15 +65,26 @@ public class DeviceScanActivity extends AppCompatActivity {
         mProgressView = (ImageView) findViewById(R.id.image_looking_devices_progress);
         mLookingDevicesView = (TextView) findViewById(R.id.text_looking_devices);
 
-        mHandler = new Handler();
+        mPairedDevices = Database.mWandDeviceDao.getAllDevices();
+        mPairedDevicesAddresses = new ArrayList<>();
+        for (int i = 0; i < mPairedDevices.size(); i++) {
+            mPairedDevicesAddresses.add(mPairedDevices.get(i).address);
+        }
 
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        mHandler = new Handler();
 
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recycler_add_device);
         mAdapter = new WandDevicesAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.setOnItemClickListener(new WandDevicesAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(WandDevice wandDevice) {
+
+            }
+
             @Override
             public void onItemClick(BluetoothDevice bluetoothDevice) {
                 Intent intent = new Intent(DeviceScanActivity.this, PairDeviceActivity.class);
@@ -148,7 +162,9 @@ public class DeviceScanActivity extends AppCompatActivity {
             L.info("ScanResult: " + result.toString());
             BluetoothDevice btDevice = result.getDevice();
 
-            if (result.toString().contains(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID) && !mAdapter.contains(btDevice)) {
+            if (result.toString().contains(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID)
+                    && !mAdapter.contains(btDevice)
+                    && !mPairedDevicesAddresses.contains(btDevice.getAddress())) {
                 mAdapter.add(btDevice);
             }
         }

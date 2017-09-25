@@ -33,4 +33,13 @@ public class WandAttributes {
     public static final String CHANGE_NAME_OK = "#N:OK@";
     public static final String CHANGE_PASSWORD_OK = "#C:OK@";
     public static final String CHANGE_PASSWORD_ERROR = "#C:NO@";
+    public static final String ENABLE_RELAY_OK = "#R1:OK@";
+    public static final String ENABLE_RELAY_ERROR = "#R1:NO@";
+    public static final String DISABLE_RELAY_OK = "#R0:OK@";
+    public static final String DISABLE_RELAY_ERROR = "#R0:NO@";
+
+    public static final String MODE_MANUAL = "M=M";
+    public static final String MODE_AUTOMATIC = "M=A";
+    public static final String RELEY_ENABLED = "R=1";
+    public static final String RELEY_DISABLED = "R=0";
 }

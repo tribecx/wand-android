@@ -34,9 +34,15 @@ public class AssignOwnerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_assign_owner, container, false);
+        return inflater.inflate(R.layout.fragment_assign_owner, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         mOwnerView = view.findViewById(R.id.edit_enter_device_owner);
+        mOwnerView.requestFocus();
         mOwnerView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -54,8 +60,6 @@ public class AssignOwnerFragment extends Fragment {
                 attemptAssignOwner();
             }
         });
-
-        return view;
     }
 
     private void attemptAssignOwner() {

@@ -11,7 +11,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -21,9 +23,11 @@ import android.widget.TextView;
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
 import com.tunashields.wand.bluetooth.WandAttributes;
+import com.tunashields.wand.data.Database;
 import com.tunashields.wand.fragments.DoneDialogFragment;
 import com.tunashields.wand.fragments.ErrorDialogFragment;
 import com.tunashields.wand.fragments.ProgressDialogFragment;
+import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
 import com.tunashields.wand.utils.WandUtils;
 
@@ -40,6 +44,10 @@ public class PairDeviceActivity extends AppCompatActivity {
     private ProgressDialogFragment mProgressDialogFragment;
 
     private BluetoothLeService mBluetoothLeService;
+
+    private String mPassword = null;
+
+    private boolean autoSendPassword = false;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -146,10 +154,29 @@ public class PairDeviceActivity extends AppCompatActivity {
     private void showPairDeviceScreen() {
         mEnterPasswordView = (EditText) findViewById(R.id.edit_enter_password);
         mEnterPasswordView.requestFocus();
+
+        mEnterPasswordView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                autoSendPassword = false;
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         mEnterPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_GO) {
+                    autoSendPassword = true;
                     sendPassword();
                     return true;
                 }
@@ -167,9 +194,15 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private void processData(String data) {
         switch (data) {
+            case WandAttributes.DETECT_NEW_CONNECTION:
+                if (autoSendPassword)
+                    sendPassword();
+                break;
             case WandAttributes.ENTER_PASSWORD_OK:
-                dismissProgressDialog();
-                showDoneDialog();
+                if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mDeviceName, mPassword))) {
+                    dismissProgressDialog();
+                    showDoneDialog();
+                }
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
                 dismissProgressDialog();
@@ -190,9 +223,9 @@ public class PairDeviceActivity extends AppCompatActivity {
     private void sendPassword() {
         if (mEnterPasswordView == null) return;
 
-        String password = mEnterPasswordView.getText().toString();
+        mPassword = mEnterPasswordView.getText().toString();
 
-        if (TextUtils.isEmpty(password)) {
+        if (TextUtils.isEmpty(mPassword)) {
             mEnterPasswordView.setText(getString(R.string.error_empty_field));
             mEnterPasswordView.requestFocus();
             return;
@@ -200,7 +233,7 @@ public class PairDeviceActivity extends AppCompatActivity {
 
         showProgressDialog(getString(R.string.prompt_linking_device));
 
-        mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(password));
+        mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(mPassword));
     }
 
     private void showProgressDialog(String message) {

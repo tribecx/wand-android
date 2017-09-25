@@ -14,8 +14,12 @@ public class WandUtils {
         return "#C" + password + "@";
     }
 
-    public static String setEnterPasswordFormat(String password){
+    public static String setEnterPasswordFormat(String password) {
         return "#P" + password + "@";
+    }
+
+    public static String setRelayFormat(int enable) {
+        return "#R" + String.valueOf(enable) + "@";
     }
 
 }

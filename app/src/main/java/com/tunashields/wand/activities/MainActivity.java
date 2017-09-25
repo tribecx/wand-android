@@ -2,6 +2,7 @@ package com.tunashields.wand.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,11 +18,12 @@ import android.view.View;
 import com.tunashields.wand.R;
 import com.tunashields.wand.adapters.WandDevicesAdapter;
 import com.tunashields.wand.data.Database;
+import com.tunashields.wand.models.WandDevice;
 
 public class MainActivity extends AppCompatActivity {
 
-    RecyclerView mRecyclerView;
-    WandDevicesAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private WandDevicesAdapter mAdapter;
 
     private BluetoothAdapter mBluetoothAdapter;
     private final int MY_REQUEST_ENABLE_BT = 101;
@@ -36,11 +38,31 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new WandDevicesAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
-        /*mAdapter.add(new WandDevice("car", "Mustang", "Irvin", false));
-        mAdapter.add(new WandDevice("garage", "VMW", "Irvin", true));
-        mAdapter.add(new WandDevice("garage", "House Garage", "Irvin", false));*/
-
         mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
+        mAdapter.setOnItemClickListener(new WandDevicesAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(WandDevice wandDevice) {
+                Intent intent = new Intent(MainActivity.this, DeviceDetailActivity.class);
+                intent.putExtra(WandDevice.KEY, wandDevice);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onItemClick(BluetoothDevice bluetoothDevice) {
+
+            }
+        });
+
+        mAdapter.setOnLockClickListener(new WandDevicesAdapter.OnLockClickListener() {
+            @Override
+            public void onLock(String address, boolean isLocked) {
+                if (isLocked) {
+                    //unlock(address);
+                } else {
+                    //lock(address);
+                }
+            }
+        });
 
         setVisibleLayout(mAdapter.getItemCount() <= 0);
 
@@ -56,9 +78,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case MY_REQUEST_ENABLE_BT:
-                if (resultCode == Activity.RESULT_OK) {
-                    // TODO: 9/7/17 Looking for paired devices
-                } else if (resultCode == Activity.RESULT_CANCELED) {
+                if (resultCode == Activity.RESULT_CANCELED) {
                     //Bluetooth not enabled.
                     finish();
                 }

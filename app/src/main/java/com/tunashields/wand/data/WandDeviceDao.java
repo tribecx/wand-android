@@ -42,7 +42,7 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
         cursor = super.query(TABLE_DEVICE, DEVICE_COLUMNS, selection, selectionArgs, ID);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                while (!cursor.isAfterLast()){
+                while (!cursor.isAfterLast()) {
                     device = cursorToEntity(cursor);
                     cursor.moveToNext();
                 }
@@ -69,7 +69,7 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
         return devices;
     }
 
-    protected WandDevice cursorToEntity(Cursor cursor) {
+    private WandDevice cursorToEntity(Cursor cursor) {
         WandDevice device = new WandDevice();
         if (cursor != null) {
             device.id = cursor.getInt(cursor.getColumnIndex(ID));
@@ -78,7 +78,7 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
             device.owner = cursor.getString(cursor.getColumnIndex(OWNER));
             device.password = cursor.getString(cursor.getColumnIndex(PASSWORD));
             device.mode = cursor.getString(cursor.getColumnIndex(MODE));
-            device.relay = cursor.getString(cursor.getColumnIndex(RELAY));
+            device.relay = cursor.getInt(cursor.getColumnIndex(RELAY));
             device.version = cursor.getString(cursor.getColumnIndex(VERSION));
             device.manufacturing_date = cursor.getString(cursor.getColumnIndex(MANUFACTURING_DATE));
         }
@@ -93,6 +93,7 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
         contentValues.put(PASSWORD, device.password);
         contentValues.put(MODE, device.mode);
         contentValues.put(RELAY, device.relay);
+        contentValues.put(SERIAL_NUMBER, device.serial_number);
         contentValues.put(VERSION, device.version);
         contentValues.put(MANUFACTURING_DATE, device.manufacturing_date);
     }
