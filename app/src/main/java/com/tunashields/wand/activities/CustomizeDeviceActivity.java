@@ -217,7 +217,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
     }
 
     private void configureNameAndOwner() {
-        mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameOwnerFormat(mCustomName, mCustomOwner));
+        mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mCustomName, mCustomOwner));
     }
 
     private void configurePassword() {

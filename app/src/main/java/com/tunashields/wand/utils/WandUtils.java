@@ -6,7 +6,7 @@ package com.tunashields.wand.utils;
 
 public class WandUtils {
 
-    public static String setChangeNameOwnerFormat(String name, String owner) {
+    public static String setChangeNameAndOwnerFormat(String name, String owner) {
         return "#N" + name + "-" + owner + "@";
     }
 
@@ -20,6 +20,10 @@ public class WandUtils {
 
     public static String setRelayFormat(int enable) {
         return "#R" + String.valueOf(enable) + "@";
+    }
+
+    public static String setChangeModeFormat(String mode) {
+        return "#M" + mode + "@";
     }
 
 }

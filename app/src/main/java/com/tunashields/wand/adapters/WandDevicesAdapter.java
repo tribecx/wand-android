@@ -2,6 +2,7 @@ package com.tunashields.wand.adapters;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -86,14 +87,17 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (wandDevice.mode != null && wandDevice.mode.equals("A")) {
             holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
             holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_automatic_lock));
+            holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
             return;
         }
 
         if (wandDevice.relay == 0) {
             holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_green_borders_button);
             holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_lock));
+            holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_green));
         } else if (wandDevice.relay == 1) {
             holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_locked_device_button);
+            holder.mStatusDeviceButton.setText("");
         }
     }
 
@@ -121,6 +125,11 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     mOnItemClickListener.onItemClick((BluetoothDevice) mItems.get(getAdapterPosition()));
             }
         }
+    }
+
+    public void clear() {
+        mItems.clear();
+        notifyDataSetChanged();
     }
 
     public void add(Object object) {

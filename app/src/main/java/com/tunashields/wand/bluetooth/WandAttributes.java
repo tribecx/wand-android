@@ -37,6 +37,8 @@ public class WandAttributes {
     public static final String ENABLE_RELAY_ERROR = "#R1:NO@";
     public static final String DISABLE_RELAY_OK = "#R0:OK@";
     public static final String DISABLE_RELAY_ERROR = "#R0:NO@";
+    public static final String AUTOMATIC_MODE_OK = "#MA:OK@";
+    public static final String MANUAL_MODE_OK = "#MM:OK@";
 
     public static final String MODE_MANUAL = "M=M";
     public static final String MODE_AUTOMATIC = "M=A";

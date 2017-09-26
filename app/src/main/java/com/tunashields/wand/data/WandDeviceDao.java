@@ -35,9 +35,22 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
     }
 
     @Override
-    public WandDevice getDeviceById(int id) {
-        String selectionArgs[] = {String.valueOf(id)};
+    public boolean updateDevice(WandDevice device) {
+        setContentValues(device);
         String selection = ID + " = ?";
+        String selectionArgs[] = {String.valueOf(device.id)};
+        try {
+            return super.update(TABLE_DEVICE, getContentValues(), selection, selectionArgs) > 0;
+        } catch (SQLiteConstraintException exception) {
+            L.warning("Database: " + exception.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public WandDevice getDeviceById(int id) {
+        String selection = ID + " = ?";
+        String selectionArgs[] = {String.valueOf(id)};
         WandDevice device = new WandDevice();
         cursor = super.query(TABLE_DEVICE, DEVICE_COLUMNS, selection, selectionArgs, ID);
         if (cursor != null) {

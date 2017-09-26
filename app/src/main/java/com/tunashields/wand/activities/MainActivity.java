@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private final int MY_REQUEST_ENABLE_BT = 101;
     private final int MY_REQUEST_ENABLE_GPS = 102;
 
+    private final int MY_CONFIGURE_DEVICE_REQUEST = 103;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(WandDevice wandDevice) {
                 Intent intent = new Intent(MainActivity.this, DeviceDetailActivity.class);
                 intent.putExtra(WandDevice.KEY, wandDevice);
-                startActivity(intent);
+                startActivityForResult(intent, MY_CONFIGURE_DEVICE_REQUEST);
             }
 
             @Override
@@ -89,6 +91,12 @@ public class MainActivity extends AppCompatActivity {
                     checkBluetooth();
                 } else {
                     finish();
+                }
+                break;
+            case MY_CONFIGURE_DEVICE_REQUEST:
+                if (resultCode == Activity.RESULT_OK) {
+                    mAdapter.clear();
+                    mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
                 }
                 break;
             default:

@@ -62,4 +62,20 @@
     <string name="label_information_config">Información</string>
     <string name="label_about_us">Acerca de nosotros</string>
     <string name="label_service_conditions">Condiciones del servicio</string>
+
+    <!-- strings related to device detail activity -->
+    <string name="label_automatic_mode">Modo automático</string>
+    <string name="label_automatically_locks_car_after_20_seconds">Bloquea el automóvil automáticamente\ndespués de 20 segundos de apagarlo.</string>
+    <string name="label_name">Nombre</string>
+    <string name="label_owner">Propietario</string>
+    <string name="label_password">Contraseña</string>
+    <string name="label_serial_number">Número de serie</string>
+    <string name="label_device_version">Versión del dispositivo</string>
+    <string name="label_manufacturing_date">Fecha de fabricación</string>
+    <string name="label_connecting">Conectando…</string>
+    <string name="label_sending">Enviando…</string>
+    <string name="label_change_name">Cambiar nombre</string>
+    <string name="label_enter_new_name">Introduce el nuevo nombre</string>
+    <string name="label_change_owner">Cambiar propietario</string>
+    <string name="label_enter_new_owner">Introduce el nuevo propietario</string>
 </resources>

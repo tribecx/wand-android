@@ -19,12 +19,12 @@ public abstract class DbContentProvider {
         return mSQLiteDatabase.insert(tableName, null, values);
     }
 
-    public Cursor query(String tableName, String[] columns,
-                        String selection, String[] selectionArgs, String sortOrder) {
+    public int update(String tableName, ContentValues values, String selection, String[] selectionArgs) {
+        return mSQLiteDatabase.update(tableName, values, selection, selectionArgs);
+    }
 
-        final Cursor cursor = mSQLiteDatabase.query(tableName, columns,
-                selection, selectionArgs, null, null, sortOrder);
-
+    public Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String sortOrder) {
+        final Cursor cursor = mSQLiteDatabase.query(tableName, columns, selection, selectionArgs, null, null, sortOrder);
         return cursor;
     }
 }

@@ -12,6 +12,8 @@ public interface IDeviceDao {
     // add device
     public boolean addDevice(WandDevice device);
 
+    public boolean updateDevice(WandDevice device);
+
     // get device by id
     public WandDevice getDeviceById(int id);
 

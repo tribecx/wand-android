@@ -21,4 +21,5 @@
     <color name="text_color_black">#000000</color>
     <color name="text_color_purple">#662483</color>
     <color name="text_color_green">#52BC79</color>
+    <color name="text_color_gray">#9298A3</color>
 </resources>
