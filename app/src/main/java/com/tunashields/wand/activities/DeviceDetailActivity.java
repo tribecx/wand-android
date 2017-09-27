@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
@@ -45,6 +46,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private String mNewName = null;
     private String mNewOwner = null;
+    private String mNewPassword = null;
 
     private BluetoothLeService mBluetoothLeService;
 
@@ -169,6 +171,19 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 updateUI();
                 updateDB();
                 dismissProgress();
+                break;
+            case WandAttributes.CHANGE_PASSWORD_OK:
+                mWandDevice.password = mNewPassword;
+                mNewPassword = null;
+                updateUI();
+                updateDB();
+                dismissProgress();
+                onResume();
+                break;
+            case WandAttributes.CHANGE_PASSWORD_ERROR:
+                mNewPassword = null;
+                dismissProgress();
+                Toast.makeText(DeviceDetailActivity.this, getString(R.string.error_updating_password), Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -365,6 +380,73 @@ public class DeviceDetailActivity extends AppCompatActivity {
     private void sendNewOwner() {
         showProgress(getString(R.string.label_sending));
         mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mWandDevice.name, mNewOwner));
+    }
+
+    public void onClickChangePassword(View view) {
+        showChangePasswordDialog();
+    }
+
+    private void showChangePasswordDialog() {
+        L.info("Showing change password dialog");
+
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_change_password, null);
+
+        final EditText mPasswordView = view.findViewById(R.id.edit_change_password);
+        final EditText mConfirmPasswordView = view.findViewById(R.id.edit_confirm_password);
+
+        final AlertDialog dialog = new AlertDialog.Builder(DeviceDetailActivity.this)
+                .setView(view)
+                .setNeutralButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setPositiveButton(getString(R.string.label_ok), null)
+                .create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(final DialogInterface dialogInterface) {
+                Button button = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        mPasswordView.setError(null);
+                        mConfirmPasswordView.setError(null);
+
+                        String password = mPasswordView.getText().toString();
+                        String confirm_password = mConfirmPasswordView.getText().toString();
+
+                        if (TextUtils.isEmpty(password)) {
+                            mPasswordView.setError(getString(R.string.error_empty_field));
+                            return;
+                        } else if (TextUtils.isEmpty(confirm_password)) {
+                            mConfirmPasswordView.setError(getString(R.string.error_empty_field));
+                            return;
+                        }
+
+                        if (!password.equals(confirm_password)) {
+                            mConfirmPasswordView.setError(getString(R.string.error_passwords_not_match));
+                            return;
+                        }
+
+                        mNewPassword = password;
+                        sendPassword();
+                        dialogInterface.dismiss();
+                    }
+                });
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void sendPassword() {
+        showProgress(getString(R.string.label_sending));
+        mBluetoothLeService.writeCharacteristic(WandUtils.setChangePasswordFormat(mNewPassword));
     }
 
     private void showProgress(String message) {

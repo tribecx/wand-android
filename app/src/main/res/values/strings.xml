@@ -78,4 +78,9 @@
     <string name="label_enter_new_name">Introduce el nuevo nombre</string>
     <string name="label_change_owner">Cambiar propietario</string>
     <string name="label_enter_new_owner">Introduce el nuevo propietario</string>
+    <string name="label_change_password">Cambiar contraseña</string>
+    <string name="label_enter_new_password">Introduce la nueva contraseña</string>
+    <string name="label_confirm_password">Confirma la contraseña</string>
+    <string name="error_passwords_not_match">Las contraseñas no coinciden</string>
+    <string name="error_updating_password">Error al actualizar la contraseña</string>
 </resources>
