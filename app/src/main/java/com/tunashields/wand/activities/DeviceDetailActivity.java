@@ -14,10 +14,14 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -38,6 +42,9 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private ProgressDialog mProgressDialog = null;
     private boolean isPasswordEntered = false;
+
+    private String mNewName = null;
+    private String mNewOwner = null;
 
     private BluetoothLeService mBluetoothLeService;
 
@@ -151,6 +158,18 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 updateDB();
                 dismissProgress();
                 break;
+            case WandAttributes.CHANGE_NAME_OK:
+                if (mNewName != null) {
+                    mWandDevice.name = mNewName;
+                    mNewName = null;
+                } else if (mNewOwner != null) {
+                    mWandDevice.owner = mNewOwner;
+                    mNewOwner = null;
+                }
+                updateUI();
+                updateDB();
+                dismissProgress();
+                break;
         }
     }
 
@@ -234,7 +253,118 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     public void onClickChangeName(View view) {
+        showChangeNameDialog();
+    }
+
+    private void showChangeNameDialog() {
         L.info("Showing change name dialog");
+
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_change_name, null);
+
+        final EditText mNameView = view.findViewById(R.id.edit_change_name);
+
+        final AlertDialog dialog = new AlertDialog.Builder(DeviceDetailActivity.this)
+                .setView(view)
+                .setNeutralButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setPositiveButton(getString(R.string.label_ok), null)
+                .create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(final DialogInterface dialogInterface) {
+                Button button = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        mNameView.setError(null);
+
+                        mNewName = mNameView.getText().toString();
+
+                        if (TextUtils.isEmpty(mNewName)) {
+                            mNameView.setError(getString(R.string.error_empty_field));
+                            mNewName = null;
+                            return;
+                        }
+
+                        sendNewName();
+                        dialogInterface.dismiss();
+                    }
+                });
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void sendNewName() {
+        showProgress(getString(R.string.label_sending));
+        if (mWandDevice.owner != null)
+            mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mNewName, mWandDevice.owner));
+        else
+            mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mNewName, ""));
+    }
+
+    public void onClickChangeOwner(View view) {
+        showChangeOwnerDialog();
+    }
+
+    private void showChangeOwnerDialog() {
+        L.info("Showing change owner dialog");
+
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_change_owner, null);
+
+        final EditText mOwnerView = view.findViewById(R.id.edit_change_owner);
+
+        final AlertDialog dialog = new AlertDialog.Builder(DeviceDetailActivity.this)
+                .setView(view)
+                .setNeutralButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setPositiveButton(getString(R.string.label_ok), null)
+                .create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(final DialogInterface dialogInterface) {
+                Button button = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        mOwnerView.setError(null);
+
+                        mNewOwner = mOwnerView.getText().toString();
+
+                        if (TextUtils.isEmpty(mNewOwner)) {
+                            mOwnerView.setError(getString(R.string.error_empty_field));
+                            mNewOwner = null;
+                            return;
+                        }
+
+                        sendNewOwner();
+                        dialogInterface.dismiss();
+                    }
+                });
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void sendNewOwner() {
+        showProgress(getString(R.string.label_sending));
+        mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mWandDevice.name, mNewOwner));
     }
 
     private void showProgress(String message) {
