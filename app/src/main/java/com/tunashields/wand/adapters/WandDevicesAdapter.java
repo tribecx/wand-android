@@ -2,8 +2,12 @@ package com.tunashields.wand.adapters;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.drawable.LayerDrawable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.tunashields.wand.R;
-import com.tunashields.wand.bluetooth.WandAttributes;
 import com.tunashields.wand.models.WandDevice;
 
 import java.util.ArrayList;
@@ -71,23 +74,35 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void bindWandViewHolder(ViewHolder holder, BluetoothDevice bluetoothDevice) {
-        holder.mWandDeviceImageView.setImageResource(bluetoothDevice.getName().equals(WandAttributes.CAR_DEFAULT_NAME) ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_garage_purple);
+        holder.mWandDeviceImageView.setImageResource(R.drawable.ic_wand_car_purple);
         holder.mWandDeviceNameView.setText(bluetoothDevice.getName());
         holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_new_device));
         holder.mStatusDeviceButton.setVisibility(View.GONE);
     }
 
     private void bindWandViewHolder(ViewHolder holder, WandDevice wandDevice) {
-        holder.mWandDeviceImageView.setImageResource(R.drawable.ic_wand_car_purple);
-        holder.mWandDeviceNameView.setText(wandDevice.name);
 
-        if (wandDevice.owner != null)
+        holder.mRootItemLayout.setBackgroundResource(wandDevice.close ? R.drawable.background_wand_device : R.drawable.background_wand_device_out_range);
+        holder.mWandDeviceImageView.setImageResource(wandDevice.close ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_car_gray);
+        holder.mSeparatorView.setBackgroundColor(wandDevice.close ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
+        holder.mWandDeviceNameView.setText(wandDevice.name);
+        holder.mWandDeviceNameView.setTextColor(wandDevice.close ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
+
+        if (wandDevice.owner != null) {
             holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_of, wandDevice.owner));
+            holder.mWandDeviceOwnerView.setTextColor(wandDevice.close ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
+        }
+
+        if (!wandDevice.close) {
+            holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_gray_borders_button);
+            holder.mStatusDeviceButton.setText("");
+            return;
+        }
 
         if (wandDevice.mode != null && wandDevice.mode.equals("A")) {
             holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
             holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_automatic_lock));
-            holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+            holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_gray_dark));
             return;
         }
 
@@ -96,13 +111,23 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_lock));
             holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_green));
         } else if (wandDevice.relay == 1) {
-            holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_locked_device_button);
+            Resources resources = mContext.getResources();
+            int vertical_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, resources.getDisplayMetrics());
+            int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, resources.getDisplayMetrics());
+
+            LayerDrawable layerDrawable = (LayerDrawable) mContext.getDrawable(R.drawable.background_locked_device_button);
+            if (layerDrawable != null && layerDrawable.getDrawable(1) != null)
+                layerDrawable.setLayerInset(1, horizontal_margin, vertical_margin, horizontal_margin, vertical_margin);
+
+            holder.mStatusDeviceButton.setBackground(layerDrawable);
             holder.mStatusDeviceButton.setText("");
         }
     }
 
     private class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        ConstraintLayout mRootItemLayout;
         ImageView mWandDeviceImageView;
+        View mSeparatorView;
         TextView mWandDeviceNameView;
         TextView mWandDeviceOwnerView;
         Button mStatusDeviceButton;
@@ -110,7 +135,9 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         ViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
+            mRootItemLayout = itemView.findViewById(R.id.item_wand_device);
             mWandDeviceImageView = itemView.findViewById(R.id.image_wand_device_type);
+            mSeparatorView = itemView.findViewById(R.id.separator);
             mWandDeviceNameView = itemView.findViewById(R.id.text_wand_device_name);
             mWandDeviceOwnerView = itemView.findViewById(R.id.text_wand_device_owner);
             mStatusDeviceButton = itemView.findViewById(R.id.button_wand_device_state);
@@ -119,9 +146,10 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         @Override
         public void onClick(View view) {
             if (mOnItemClickListener != null) {
-                if (mItems.get(getAdapterPosition()) instanceof WandDevice)
-                    mOnItemClickListener.onItemClick((WandDevice) mItems.get(getAdapterPosition()));
-                else if (mItems.get(getAdapterPosition()) instanceof BluetoothDevice)
+                if (mItems.get(getAdapterPosition()) instanceof WandDevice) {
+                    if (((WandDevice) mItems.get(getAdapterPosition())).close)
+                        mOnItemClickListener.onItemClick((WandDevice) mItems.get(getAdapterPosition()));
+                } else if (mItems.get(getAdapterPosition()) instanceof BluetoothDevice)
                     mOnItemClickListener.onItemClick((BluetoothDevice) mItems.get(getAdapterPosition()));
             }
         }
@@ -146,6 +174,16 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         return mItems.contains(object);
     }
 
+    public void notifyDeviceFounded(String address) {
+        for (int i = 0; i < mItems.size(); i++) {
+            WandDevice item = (WandDevice) mItems.get(i);
+            if (item.address.equals(address)) {
+                item.close = true;
+                notifyItemChanged(i);
+            }
+        }
+    }
+
     public interface OnItemClickListener {
         void onItemClick(WandDevice wandDevice);
 
@@ -153,7 +191,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     public interface OnLockClickListener {
-        void onLock(String address, boolean isLocked);
+        void onLock();
     }
 
     public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {

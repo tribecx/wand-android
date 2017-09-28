@@ -202,7 +202,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
             mAutomaticModeView.setChecked(true);
 
             mLockDeviceButton.setText(getString(R.string.label_automatic_lock));
-            mLockDeviceButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.darker_gray));
+            mLockDeviceButton.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.text_color_gray_dark));
             mLockDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
             mLockDeviceButton.setClickable(false);
 
@@ -218,7 +218,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
             } else {
                 Resources resources = getResources();
                 int vertical_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, resources.getDisplayMetrics());
-                int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 70, resources.getDisplayMetrics());
+                int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, resources.getDisplayMetrics());
 
                 LayerDrawable layerDrawable = (LayerDrawable) getDrawable(R.drawable.background_locked_device_button);
                 if (layerDrawable != null && layerDrawable.getDrawable(1) != null)

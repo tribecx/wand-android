@@ -4,11 +4,17 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -19,16 +25,28 @@ import com.tunashields.wand.R;
 import com.tunashields.wand.adapters.WandDevicesAdapter;
 import com.tunashields.wand.data.Database;
 import com.tunashields.wand.models.WandDevice;
+import com.tunashields.wand.utils.L;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private ArrayList<WandDevice> mPairedDevices;
+    private ArrayList<String> mPairedDevicesAddresses;
+    private ArrayList<String> mFoundedDevicesAddresses;
     private RecyclerView mRecyclerView;
     private WandDevicesAdapter mAdapter;
 
     private BluetoothAdapter mBluetoothAdapter;
+    private Handler mHandler;
+    private BluetoothLeScanner mLeScanner;
+    private ScanSettings mScanSettings;
+    private List<ScanFilter> mScanFilters;
+    private static final long SCAN_PERIOD = 10000;
+
     private final int MY_REQUEST_ENABLE_BT = 101;
     private final int MY_REQUEST_ENABLE_GPS = 102;
-
     private final int MY_CONFIGURE_DEVICE_REQUEST = 103;
 
     @Override
@@ -36,11 +54,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mPairedDevices = Database.mWandDeviceDao.getAllDevices();
+        mPairedDevicesAddresses = new ArrayList<>();
+        for (int i = 0; i < mPairedDevices.size(); i++) {
+            mPairedDevicesAddresses.add(mPairedDevices.get(i).address);
+        }
+        mFoundedDevicesAddresses = new ArrayList<>();
+
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_paired_devices);
         mAdapter = new WandDevicesAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
-        mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
+        mAdapter.addAll(mPairedDevices);
         mAdapter.setOnItemClickListener(new WandDevicesAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(WandDevice wandDevice) {
@@ -57,12 +82,12 @@ public class MainActivity extends AppCompatActivity {
 
         mAdapter.setOnLockClickListener(new WandDevicesAdapter.OnLockClickListener() {
             @Override
-            public void onLock(String address, boolean isLocked) {
-                if (isLocked) {
+            public void onLock() {
+                /*if (isLocked) {
                     //unlock(address);
                 } else {
                     //lock(address);
-                }
+                }*/
             }
         });
 
@@ -71,9 +96,30 @@ public class MainActivity extends AppCompatActivity {
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
+        mHandler = new Handler();
+
         if (checkGPS()) {
             checkBluetooth();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
+            mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+            mScanSettings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                    .build();
+            mScanFilters = new ArrayList<>();
+            scanLeDevice(true);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        scanLeDevice(false);
     }
 
     @Override
@@ -95,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case MY_CONFIGURE_DEVICE_REQUEST:
                 if (resultCode == Activity.RESULT_OK) {
+                    mFoundedDevicesAddresses.clear();
                     mAdapter.clear();
                     mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
                 }
@@ -108,6 +155,60 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.image_no_paired_devices).setVisibility(value ? View.VISIBLE : View.GONE);
         findViewById(R.id.layout_paired_devices).setVisibility(value ? View.GONE : View.VISIBLE);
     }
+
+    private void scanLeDevice(final boolean enable) {
+        if (enable) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mLeScanner.stopScan(mScanCallback);
+                }
+            }, SCAN_PERIOD);
+            mLeScanner.startScan(mScanFilters, mScanSettings, mScanCallback);
+        } else {
+            mLeScanner.stopScan(mScanCallback);
+        }
+    }
+
+    private ScanCallback mScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            L.info("callbackType: " + String.valueOf(callbackType));
+            L.info("ScanResult: " + result.toString());
+            BluetoothDevice btDevice = result.getDevice();
+
+            String address = btDevice.getAddress();
+
+            if (mPairedDevicesAddresses.contains(address) && !mFoundedDevicesAddresses.contains(address)) {
+                mFoundedDevicesAddresses.add(address);
+                mAdapter.notifyDeviceFounded(address);
+            }
+
+            /*WandDevice device = Database.mWandDeviceDao.getDeviceByAddress(btDevice.getAddress());
+            if (device != null && !mAdapter.contains(device)) {
+                mAdapter.add(device);
+                setVisibleLayout(mAdapter.getItemCount() <= 0);
+            }*/
+
+            /*if (result.toString().contains(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID)
+                    && !mAdapter.contains(btDevice)
+                    && !mPairedDevicesAddresses.contains(btDevice.getAddress())) {
+                mAdapter.add(btDevice);
+            }*/
+        }
+
+        @Override
+        public void onBatchScanResults(List<ScanResult> results) {
+            for (ScanResult sr : results) {
+                L.info("ScanResult - Results: " + sr.toString());
+            }
+        }
+
+        @Override
+        public void onScanFailed(int errorCode) {
+            L.error("Scan Failed  - Error Code: " + errorCode);
+        }
+    };
 
     public void checkBluetooth() {
         if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {

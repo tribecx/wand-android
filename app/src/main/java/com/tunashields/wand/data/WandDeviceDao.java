@@ -51,7 +51,25 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
     public WandDevice getDeviceById(int id) {
         String selection = ID + " = ?";
         String selectionArgs[] = {String.valueOf(id)};
-        WandDevice device = new WandDevice();
+        WandDevice device = null;
+        cursor = super.query(TABLE_DEVICE, DEVICE_COLUMNS, selection, selectionArgs, ID);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    device = cursorToEntity(cursor);
+                    cursor.moveToNext();
+                }
+                cursor.close();
+            }
+        }
+        return device;
+    }
+
+    @Override
+    public WandDevice getDeviceByAddress(String address) {
+        String selection = ADDRESS + " = ?";
+        String selectionArgs[] = {address};
+        WandDevice device = null;
         cursor = super.query(TABLE_DEVICE, DEVICE_COLUMNS, selection, selectionArgs, ID);
         if (cursor != null) {
             if (cursor.moveToFirst()) {

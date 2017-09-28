@@ -17,6 +17,9 @@ public interface IDeviceDao {
     // get device by id
     public WandDevice getDeviceById(int id);
 
+    // get device by address
+    public WandDevice getDeviceByAddress(String address);
+
     // get saved devices
     public ArrayList<WandDevice> getAllDevices();
 }

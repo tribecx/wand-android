@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item_wand_device"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
@@ -22,7 +23,7 @@
         tools:ignore="ContentDescription" />
 
     <View
-        android:id="@+id/view"
+        android:id="@+id/separator"
         android:layout_width="1dp"
         android:layout_height="0dp"
         android:layout_marginBottom="16dp"
@@ -42,7 +43,7 @@
         android:layout_marginTop="16dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/view"
+        app:layout_constraintLeft_toRightOf="@+id/separator"
         app:layout_constraintRight_toLeftOf="@+id/button_wand_device_state"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.5">

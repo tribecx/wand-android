@@ -21,6 +21,7 @@ public class WandDevice implements Parcelable {
     public String serial_number;
     public String version;
     public String manufacturing_date;
+    public boolean close;
 
     public WandDevice() {
     }
