@@ -16,6 +16,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -88,6 +89,25 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     //lock(address);
                 }*/
+            }
+        });
+
+        final SwipeRefreshLayout mRefreshDevices = (SwipeRefreshLayout) findViewById(R.id.refresh_devices);
+        mRefreshDevices.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
+                    mFoundedDevicesAddresses.clear();
+                    mAdapter.clear();
+                    mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
+                    mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+                    mScanSettings = new ScanSettings.Builder()
+                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                            .build();
+                    mScanFilters = new ArrayList<>();
+                    scanLeDevice(true);
+                }
+                mRefreshDevices.setRefreshing(false);
             }
         });
 
@@ -183,18 +203,6 @@ public class MainActivity extends AppCompatActivity {
                 mFoundedDevicesAddresses.add(address);
                 mAdapter.notifyDeviceFounded(address);
             }
-
-            /*WandDevice device = Database.mWandDeviceDao.getDeviceByAddress(btDevice.getAddress());
-            if (device != null && !mAdapter.contains(device)) {
-                mAdapter.add(device);
-                setVisibleLayout(mAdapter.getItemCount() <= 0);
-            }*/
-
-            /*if (result.toString().contains(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID)
-                    && !mAdapter.contains(btDevice)
-                    && !mPairedDevicesAddresses.contains(btDevice.getAddress())) {
-                mAdapter.add(btDevice);
-            }*/
         }
 
         @Override
