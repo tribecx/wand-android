@@ -49,6 +49,8 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private boolean autoSendPassword = false;
 
+    private WandDevice mWandDevice;
+
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -199,14 +201,37 @@ public class PairDeviceActivity extends AppCompatActivity {
                     sendPassword();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
-                if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mDeviceName, mPassword))) {
-                    dismissProgressDialog();
-                    showDoneDialog();
-                }
+                mWandDevice = new WandDevice(mDeviceAddress, mDeviceName, mPassword);
+                getOwner();
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
                 dismissProgressDialog();
                 showErrorDialog();
+                break;
+            default:
+                if (data.contains("#D:")) {
+                    mWandDevice.owner = data.substring(3, data.length() - 1);
+                    getState();
+                }
+
+                if (data.contains("#E:") && data.contains("OK")) {
+                    if (data.contains(WandAttributes.MODE_MANUAL)) {
+                        mWandDevice.mode = "M";
+                    } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
+                        mWandDevice.mode = "A";
+                    }
+
+                    if (data.contains(WandAttributes.RELAY_DISABLED)) {
+                        mWandDevice.relay = 0;
+                    } else if (data.contains(WandAttributes.RELAY_ENABLED)) {
+                        mWandDevice.relay = 1;
+                    }
+
+                    if (Database.mWandDeviceDao.addDevice(mWandDevice)) {
+                        dismissProgressDialog();
+                        showDoneDialog();
+                    }
+                }
                 break;
         }
     }
@@ -234,6 +259,14 @@ public class PairDeviceActivity extends AppCompatActivity {
         showProgressDialog(getString(R.string.prompt_linking_device));
 
         mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(mPassword));
+    }
+
+    private void getOwner() {
+        mBluetoothLeService.writeCharacteristic(WandUtils.getOwner());
+    }
+
+    private void getState() {
+        mBluetoothLeService.writeCharacteristic(WandUtils.getState());
     }
 
     private void showProgressDialog(String message) {

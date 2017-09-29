@@ -14,12 +14,6 @@ public interface IDeviceDao {
 
     public boolean updateDevice(WandDevice device);
 
-    // get device by id
-    public WandDevice getDeviceById(int id);
-
-    // get device by address
-    public WandDevice getDeviceByAddress(String address);
-
     // get saved devices
     public ArrayList<WandDevice> getAllDevices();
 }

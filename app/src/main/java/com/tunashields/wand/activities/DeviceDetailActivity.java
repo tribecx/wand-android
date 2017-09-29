@@ -31,6 +31,7 @@ import com.tunashields.wand.bluetooth.BluetoothLeService;
 import com.tunashields.wand.bluetooth.WandAttributes;
 import com.tunashields.wand.data.Database;
 import com.tunashields.wand.models.WandDevice;
+import com.tunashields.wand.utils.DateUtils;
 import com.tunashields.wand.utils.L;
 import com.tunashields.wand.utils.WandUtils;
 
@@ -135,6 +136,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 setUpViews();
                 updateUI();
                 dismissProgress();
+                if (mWandDevice.version == null) {
+                    getVersion();
+                } else if (mWandDevice.manufacturing_date == null) {
+                    getManufacturingDate();
+                }
                 break;
             case WandAttributes.ENABLE_RELAY_OK:
                 mWandDevice.relay = 1;
@@ -185,6 +191,27 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 dismissProgress();
                 Toast.makeText(DeviceDetailActivity.this, getString(R.string.error_updating_password), Toast.LENGTH_SHORT).show();
                 break;
+            default:
+                if (data.contains("#V:")) {
+                    L.debug(data);
+                    String[] separated = data.split(",");
+                    String version = separated[0].substring(3);
+                    String firmware = separated[1].substring(3, separated[1].length() - 1);
+                    L.debug(version);
+                    L.debug(firmware);
+                    mWandDevice.version = version;
+                    mWandDevice.firmware = firmware;
+                    Database.mWandDeviceDao.updateDevice(mWandDevice);
+                    updateUI();
+                    getManufacturingDate();
+                }
+                if (data.contains("#F:")) {
+                    L.debug(data.substring(3, data.length() - 1));
+                    mWandDevice.manufacturing_date = data.substring(3, data.length() - 1);
+                    Database.mWandDeviceDao.updateDevice(mWandDevice);
+                    updateUI();
+                }
+                break;
         }
     }
 
@@ -232,9 +259,16 @@ public class DeviceDetailActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.text_wand_device_name)).setText(mWandDevice.name);
         ((TextView) findViewById(R.id.text_wand_device_owner)).setText(mWandDevice.owner != null ? mWandDevice.owner : "");
         ((TextView) findViewById(R.id.text_wand_device_password)).setText(mWandDevice.password != null ? mWandDevice.password : "00000");
-        ((TextView) findViewById(R.id.text_wand_device_serial_number)).setText(mWandDevice.serial_number != null ? mWandDevice.serial_number : "");
         ((TextView) findViewById(R.id.text_wand_device_version)).setText(mWandDevice.version != null ? mWandDevice.version : "");
-        ((TextView) findViewById(R.id.text_wand_device_manufacturing_date)).setText(mWandDevice.manufacturing_date != null ? mWandDevice.manufacturing_date : "");
+        ((TextView) findViewById(R.id.text_wand_device_firmware)).setText(mWandDevice.firmware != null ? mWandDevice.firmware : "");
+
+        String manufacturing_date = DateUtils.setDateFormat(mWandDevice.manufacturing_date);
+        if (manufacturing_date != null)
+            manufacturing_date = manufacturing_date.substring(0, 1).toUpperCase() + manufacturing_date.substring(1);
+        else
+            manufacturing_date = "";
+
+        ((TextView) findViewById(R.id.text_wand_device_manufacturing_date)).setText(mWandDevice.manufacturing_date != null ? manufacturing_date : "");
     }
 
     private void updateDB() {
@@ -242,6 +276,14 @@ public class DeviceDetailActivity extends AppCompatActivity {
             L.info("Record updated");
             setResult(Activity.RESULT_OK);
         }
+    }
+
+    private void getVersion() {
+        mBluetoothLeService.writeCharacteristic(WandUtils.getVersion());
+    }
+
+    private void getManufacturingDate() {
+        mBluetoothLeService.writeCharacteristic(WandUtils.getManufacturingDate());
     }
 
     public void onClickLockDevice(View view) {

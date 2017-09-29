@@ -22,7 +22,7 @@ public class WandAttributes {
      */
     public static final String NEW_DEVICE_KEY = "Wand";
     public static final String CAR_DEFAULT_NAME = "Wand-Auto\r\n";
-    public static final String DEFAULT_PASSWORD = "#P12345@";
+    public static final String DEFAULT_PASSWORD = "12345";
 
     /**
      * Wand protocol responses
@@ -42,6 +42,6 @@ public class WandAttributes {
 
     public static final String MODE_MANUAL = "M=M";
     public static final String MODE_AUTOMATIC = "M=A";
-    public static final String RELEY_ENABLED = "R=1";
-    public static final String RELEY_DISABLED = "R=0";
+    public static final String RELAY_ENABLED = "R=1";
+    public static final String RELAY_DISABLED = "R=0";
 }

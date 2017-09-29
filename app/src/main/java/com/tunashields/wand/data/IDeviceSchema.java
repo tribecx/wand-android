@@ -15,8 +15,8 @@ public interface IDeviceSchema {
     String PASSWORD = "password";
     String MODE = "mode";
     String RELAY = "relay";
-    String SERIAL_NUMBER = "serial_number";
     String VERSION = "version";
+    String FIRMWARE = "firmware";
     String MANUFACTURING_DATE = "manufacturing_date";
 
     String CREATE_TABLE_DEVICE = "CREATE TABLE " + TABLE_DEVICE + "(" +
@@ -27,10 +27,10 @@ public interface IDeviceSchema {
             PASSWORD + " TEXT," +
             MODE + " TEXT," +
             RELAY + " INTEGER," +
-            SERIAL_NUMBER + " TEXT," +
             VERSION + " TEXT," +
+            FIRMWARE + " TEXT," +
             MANUFACTURING_DATE + " TEXT)";
 
     String[] DEVICE_COLUMNS = new String[]{ID, ADDRESS, NAME,
-            OWNER, PASSWORD, MODE, RELAY, SERIAL_NUMBER, VERSION, MANUFACTURING_DATE};
+            OWNER, PASSWORD, MODE, RELAY, VERSION, FIRMWARE, MANUFACTURING_DATE};
 }

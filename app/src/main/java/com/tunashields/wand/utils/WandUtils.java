@@ -26,4 +26,20 @@ public class WandUtils {
         return "#M" + mode + "@";
     }
 
+    public static String getOwner() {
+        return "#D@";
+    }
+
+    public static String getState() {
+        return "#E@";
+    }
+
+    public static String getVersion() {
+        return "#V@";
+    }
+
+    public static String getManufacturingDate() {
+        return "#F@";
+    }
+
 }

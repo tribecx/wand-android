@@ -24,7 +24,6 @@ public abstract class DbContentProvider {
     }
 
     public Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String sortOrder) {
-        final Cursor cursor = mSQLiteDatabase.query(tableName, columns, selection, selectionArgs, null, null, sortOrder);
-        return cursor;
+        return mSQLiteDatabase.query(tableName, columns, selection, selectionArgs, null, null, sortOrder);
     }
 }

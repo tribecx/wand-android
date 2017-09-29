@@ -18,8 +18,8 @@ public class WandDevice implements Parcelable {
     public String password;
     public String mode;
     public int relay;
-    public String serial_number;
     public String version;
+    public String firmware;
     public String manufacturing_date;
     public boolean close;
 
@@ -49,9 +49,10 @@ public class WandDevice implements Parcelable {
         password = in.readString();
         mode = in.readString();
         relay = in.readInt();
-        serial_number = in.readString();
         version = in.readString();
+        firmware = in.readString();
         manufacturing_date = in.readString();
+        close = in.readByte() != 0;
     }
 
     @Override
@@ -63,9 +64,10 @@ public class WandDevice implements Parcelable {
         dest.writeString(password);
         dest.writeString(mode);
         dest.writeInt(relay);
-        dest.writeString(serial_number);
         dest.writeString(version);
+        dest.writeString(firmware);
         dest.writeString(manufacturing_date);
+        dest.writeByte((byte) (close ? 1 : 0));
     }
 
     @Override

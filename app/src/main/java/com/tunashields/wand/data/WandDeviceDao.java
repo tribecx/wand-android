@@ -48,42 +48,6 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
     }
 
     @Override
-    public WandDevice getDeviceById(int id) {
-        String selection = ID + " = ?";
-        String selectionArgs[] = {String.valueOf(id)};
-        WandDevice device = null;
-        cursor = super.query(TABLE_DEVICE, DEVICE_COLUMNS, selection, selectionArgs, ID);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                while (!cursor.isAfterLast()) {
-                    device = cursorToEntity(cursor);
-                    cursor.moveToNext();
-                }
-                cursor.close();
-            }
-        }
-        return device;
-    }
-
-    @Override
-    public WandDevice getDeviceByAddress(String address) {
-        String selection = ADDRESS + " = ?";
-        String selectionArgs[] = {address};
-        WandDevice device = null;
-        cursor = super.query(TABLE_DEVICE, DEVICE_COLUMNS, selection, selectionArgs, ID);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                while (!cursor.isAfterLast()) {
-                    device = cursorToEntity(cursor);
-                    cursor.moveToNext();
-                }
-                cursor.close();
-            }
-        }
-        return device;
-    }
-
-    @Override
     public ArrayList<WandDevice> getAllDevices() {
         ArrayList<WandDevice> devices = new ArrayList<>();
         cursor = super.query(TABLE_DEVICE, DEVICE_COLUMNS, null, null, ID);
@@ -111,6 +75,7 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
             device.mode = cursor.getString(cursor.getColumnIndex(MODE));
             device.relay = cursor.getInt(cursor.getColumnIndex(RELAY));
             device.version = cursor.getString(cursor.getColumnIndex(VERSION));
+            device.firmware = cursor.getString(cursor.getColumnIndex(FIRMWARE));
             device.manufacturing_date = cursor.getString(cursor.getColumnIndex(MANUFACTURING_DATE));
         }
         return device;
@@ -124,8 +89,8 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
         contentValues.put(PASSWORD, device.password);
         contentValues.put(MODE, device.mode);
         contentValues.put(RELAY, device.relay);
-        contentValues.put(SERIAL_NUMBER, device.serial_number);
         contentValues.put(VERSION, device.version);
+        contentValues.put(FIRMWARE, device.firmware);
         contentValues.put(MANUFACTURING_DATE, device.manufacturing_date);
     }
 

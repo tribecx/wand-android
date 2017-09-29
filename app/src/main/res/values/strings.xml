@@ -69,8 +69,8 @@
     <string name="label_name">Nombre</string>
     <string name="label_owner">Propietario</string>
     <string name="label_password">Contraseña</string>
-    <string name="label_serial_number">Número de serie</string>
     <string name="label_device_version">Versión del dispositivo</string>
+    <string name="label_device_firmware">Versión del firmware</string>
     <string name="label_manufacturing_date">Fecha de fabricación</string>
     <string name="label_connecting">Conectando…</string>
     <string name="label_sending">Enviando…</string>

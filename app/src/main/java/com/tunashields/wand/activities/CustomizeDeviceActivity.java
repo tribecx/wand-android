@@ -143,7 +143,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             case WandAttributes.DETECT_NEW_CONNECTION:
                 if (mStatus == null) {
                     mStatus = WandAttributes.DETECT_NEW_CONNECTION;
-                    mBluetoothLeService.writeCharacteristic(WandAttributes.DEFAULT_PASSWORD);
+                    mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(WandAttributes.DEFAULT_PASSWORD));
                 } else if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
                     mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(mCustomPassword));
                 }

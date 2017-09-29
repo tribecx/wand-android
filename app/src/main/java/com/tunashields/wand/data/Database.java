@@ -13,7 +13,7 @@ import com.tunashields.wand.utils.L;
 
 public class Database {
     /* Database version*/
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
     /* Database name */
     private static final String DATABASE_NAME = "wand_database.s3db";
 
@@ -51,7 +51,7 @@ public class Database {
 
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-            L.warning("Upgrading database from version"
+            L.warning("Upgrading database from version "
                     + oldVersion + " to "
                     + newVersion + " which destroys all old data");
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + IDeviceSchema.TABLE_DEVICE);

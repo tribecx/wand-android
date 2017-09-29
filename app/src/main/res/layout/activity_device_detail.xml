@@ -27,7 +27,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:onClick="onClickAutomaticMode"
         android:paddingBottom="8dp"
         android:paddingEnd="16dp"
@@ -56,7 +56,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:onClick="onClickChangeName"
         android:paddingBottom="8dp"
         android:paddingEnd="16dp"
@@ -81,6 +81,7 @@
             android:layout_gravity="end|center_vertical"
             android:maxLength="8"
             android:maxLines="1"
+            android:text="Nombre"
             android:textColor="@android:color/darker_gray"
             android:textSize="@dimen/text_size_normal" />
 
@@ -90,7 +91,7 @@
         android:id="@+id/frameLayout2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:onClick="onClickChangeOwner"
         android:paddingBottom="8dp"
         android:paddingEnd="16dp"
@@ -124,7 +125,7 @@
         android:id="@+id/frameLayout3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:onClick="onClickChangePassword"
         android:paddingBottom="8dp"
         android:paddingEnd="16dp"
@@ -161,7 +162,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:paddingBottom="8dp"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
@@ -169,38 +170,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/frameLayout3">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start|center_vertical"
-            android:maxLines="1"
-            android:text="@string/label_serial_number"
-            android:textColor="@color/text_color_black"
-            android:textSize="@dimen/text_size_normal" />
-
-        <TextView
-            android:id="@+id/text_wand_device_serial_number"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:maxLines="1"
-            android:textSize="@dimen/text_size_normal" />
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/frameLayout5"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:paddingBottom="8dp"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout4">
 
         <TextView
             android:layout_width="wrap_content"
@@ -222,9 +191,41 @@
     </FrameLayout>
 
     <FrameLayout
+        android:id="@+id/frameLayout5"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="@color/white"
+        android:paddingBottom="8dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout4">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:maxLines="1"
+            android:text="@string/label_device_firmware"
+            android:textColor="@color/text_color_black"
+            android:textSize="@dimen/text_size_normal" />
+
+        <TextView
+            android:id="@+id/text_wand_device_firmware"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:maxLines="1"
+            android:textSize="@dimen/text_size_normal" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
         android:paddingBottom="8dp"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
