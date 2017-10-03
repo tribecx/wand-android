@@ -262,13 +262,13 @@ public class DeviceDetailActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.text_wand_device_version)).setText(mWandDevice.version != null ? mWandDevice.version : "");
         ((TextView) findViewById(R.id.text_wand_device_firmware)).setText(mWandDevice.firmware != null ? mWandDevice.firmware : "");
 
-        String manufacturing_date = DateUtils.setDateFormat(mWandDevice.manufacturing_date);
-        if (manufacturing_date != null)
-            manufacturing_date = manufacturing_date.substring(0, 1).toUpperCase() + manufacturing_date.substring(1);
-        else
-            manufacturing_date = "";
-
-        ((TextView) findViewById(R.id.text_wand_device_manufacturing_date)).setText(mWandDevice.manufacturing_date != null ? manufacturing_date : "");
+        if (mWandDevice.manufacturing_date != null) {
+            String manufacturing_date = DateUtils.setDateFormat(mWandDevice.manufacturing_date);
+            if (manufacturing_date != null) {
+                manufacturing_date = manufacturing_date.substring(0, 1).toUpperCase() + manufacturing_date.substring(1);
+                ((TextView) findViewById(R.id.text_wand_device_manufacturing_date)).setText(manufacturing_date);
+            }
+        }
     }
 
     private void updateDB() {
