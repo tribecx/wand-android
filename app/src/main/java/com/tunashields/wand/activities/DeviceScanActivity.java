@@ -81,12 +81,8 @@ public class DeviceScanActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.setOnItemClickListener(new WandDevicesAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(WandDevice wandDevice) {
-
-            }
-
-            @Override
-            public void onItemClick(BluetoothDevice bluetoothDevice) {
+            public void onItemClick(Object object) {
+                BluetoothDevice bluetoothDevice = (BluetoothDevice) object;
                 Intent intent = new Intent(DeviceScanActivity.this, PairDeviceActivity.class);
                 intent.putExtra(PairDeviceActivity.EXTRA_DEVICE_NAME, bluetoothDevice.getName());
                 intent.putExtra(PairDeviceActivity.EXTRA_DEVICE_ADDRESS, bluetoothDevice.getAddress());

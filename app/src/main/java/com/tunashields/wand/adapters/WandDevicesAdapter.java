@@ -80,7 +80,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         holder.mStatusDeviceButton.setVisibility(View.GONE);
     }
 
-    private void bindWandViewHolder(ViewHolder holder, WandDevice wandDevice) {
+    private void bindWandViewHolder(final ViewHolder holder, final WandDevice wandDevice) {
 
         holder.mRootItemLayout.setBackgroundResource(wandDevice.close ? R.drawable.background_wand_device : R.drawable.background_wand_device_out_range);
         holder.mWandDeviceImageView.setImageResource(wandDevice.close ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_car_gray);
@@ -122,6 +122,15 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             holder.mStatusDeviceButton.setBackground(layerDrawable);
             holder.mStatusDeviceButton.setText("");
         }
+
+        holder.mStatusDeviceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mOnLockClickListener != null) {
+                    mOnLockClickListener.onLock(holder.getAdapterPosition(), wandDevice);
+                }
+            }
+        });
     }
 
     private class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -148,9 +157,9 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             if (mOnItemClickListener != null) {
                 if (mItems.get(getAdapterPosition()) instanceof WandDevice) {
                     if (((WandDevice) mItems.get(getAdapterPosition())).close)
-                        mOnItemClickListener.onItemClick((WandDevice) mItems.get(getAdapterPosition()));
-                } else if (mItems.get(getAdapterPosition()) instanceof BluetoothDevice)
-                    mOnItemClickListener.onItemClick((BluetoothDevice) mItems.get(getAdapterPosition()));
+                        mOnItemClickListener.onItemClick(mItems.get(getAdapterPosition()));
+                } else
+                    mOnItemClickListener.onItemClick(mItems.get(getAdapterPosition()));
             }
         }
     }
@@ -174,6 +183,12 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         return mItems.contains(object);
     }
 
+    public void update(int position, Object object) {
+        mItems.remove(position);
+        mItems.add(position, object);
+        notifyItemChanged(position);
+    }
+
     public void notifyDeviceFounded(String address) {
         for (int i = 0; i < mItems.size(); i++) {
             WandDevice item = (WandDevice) mItems.get(i);
@@ -184,14 +199,22 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(WandDevice wandDevice);
+    public void notifyDeviceDisconnected(String address) {
+        for (int i = 0; i < mItems.size(); i++) {
+            WandDevice item = (WandDevice) mItems.get(i);
+            if (item.address.equals(address)) {
+                item.close = false;
+                notifyItemChanged(i);
+            }
+        }
+    }
 
-        void onItemClick(BluetoothDevice bluetoothDevice);
+    public interface OnItemClickListener {
+        void onItemClick(Object object);
     }
 
     public interface OnLockClickListener {
-        void onLock();
+        void onLock(int position, WandDevice wandDevice);
     }
 
     public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {

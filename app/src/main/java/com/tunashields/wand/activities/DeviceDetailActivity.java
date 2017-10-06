@@ -59,8 +59,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 L.error("Unable to initialize Bluetooth");
                 finish();
             }
-            // Automatically connects to the device upon successful start-up initialization.
-            mBluetoothLeService.connect(mWandDevice.address);
+            if (mWandDevice.version == null) {
+                getVersion();
+            } else if (mWandDevice.manufacturing_date == null) {
+                getManufacturingDate();
+            }
         }
 
         @Override
@@ -100,17 +103,14 @@ public class DeviceDetailActivity extends AppCompatActivity {
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-        showProgress(getString(R.string.label_connecting));
+        setUpViews();
+        updateUI();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBluetoothLeService != null) {
-            final boolean result = mBluetoothLeService.connect(mWandDevice.address);
-            L.debug("Connect request result=" + result);
-        }
     }
 
     @Override
@@ -128,20 +128,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private void processData(String data) {
         switch (data) {
-            case WandAttributes.DETECT_NEW_CONNECTION:
-                enterPassword();
-                break;
-            case WandAttributes.ENTER_PASSWORD_OK:
-                isPasswordEntered = true;
-                setUpViews();
-                updateUI();
-                dismissProgress();
-                if (mWandDevice.version == null) {
-                    getVersion();
-                } else if (mWandDevice.manufacturing_date == null) {
-                    getManufacturingDate();
-                }
-                break;
             case WandAttributes.ENABLE_RELAY_OK:
                 mWandDevice.relay = 1;
                 updateUI();
@@ -159,6 +145,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 updateUI();
                 updateDB();
                 dismissProgress();
+                break;
+            case WandAttributes.AUTOMATIC_LOCK:
+                mWandDevice.relay = 0;
+                updateUI();
+                updateDB();
                 break;
             case WandAttributes.MANUAL_MODE_OK:
                 mWandDevice.mode = "M";
@@ -213,10 +204,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 }
                 break;
         }
-    }
-
-    private void enterPassword() {
-        mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(mWandDevice.password));
     }
 
     private void setUpViews() {
@@ -279,11 +266,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     private void getVersion() {
-        mBluetoothLeService.writeCharacteristic(WandUtils.getVersion());
+        mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.getVersion());
     }
 
     private void getManufacturingDate() {
-        mBluetoothLeService.writeCharacteristic(WandUtils.getManufacturingDate());
+        mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.getManufacturingDate());
     }
 
     public void onClickLockDevice(View view) {
@@ -293,9 +280,9 @@ public class DeviceDetailActivity extends AppCompatActivity {
         showProgress(getString(R.string.label_sending));
 
         if (mWandDevice.relay == 0) {
-            mBluetoothLeService.writeCharacteristic(WandUtils.setRelayFormat(1));
+            mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setRelayFormat(1));
         } else {
-            mBluetoothLeService.writeCharacteristic(WandUtils.setRelayFormat(0));
+            mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setRelayFormat(0));
         }
     }
 
@@ -303,9 +290,9 @@ public class DeviceDetailActivity extends AppCompatActivity {
         showProgress(getString(R.string.label_sending));
 
         if (mWandDevice.mode != null && mWandDevice.mode.equals("A")) {
-            mBluetoothLeService.writeCharacteristic(WandUtils.setChangeModeFormat("M"));
+            mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeModeFormat("M"));
         } else {
-            mBluetoothLeService.writeCharacteristic(WandUtils.setChangeModeFormat("A"));
+            mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeModeFormat("A"));
         }
     }
 
@@ -363,9 +350,9 @@ public class DeviceDetailActivity extends AppCompatActivity {
     private void sendNewName() {
         showProgress(getString(R.string.label_sending));
         if (mWandDevice.owner != null)
-            mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mNewName, mWandDevice.owner));
+            mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mNewName, mWandDevice.owner));
         else
-            mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mNewName, ""));
+            mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mNewName, ""));
     }
 
     public void onClickChangeOwner(View view) {
@@ -421,7 +408,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private void sendNewOwner() {
         showProgress(getString(R.string.label_sending));
-        mBluetoothLeService.writeCharacteristic(WandUtils.setChangeNameAndOwnerFormat(mWandDevice.name, mNewOwner));
+        mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mWandDevice.name, mNewOwner));
     }
 
     public void onClickChangePassword(View view) {
@@ -488,7 +475,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private void sendPassword() {
         showProgress(getString(R.string.label_sending));
-        mBluetoothLeService.writeCharacteristic(WandUtils.setChangePasswordFormat(mNewPassword));
+        mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangePasswordFormat(mNewPassword));
     }
 
     private void showProgress(String message) {
