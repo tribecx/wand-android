@@ -156,7 +156,7 @@ public class BluetoothLeService extends Service {
         // After using a given device, you should make sure that BluetoothGatt.close() is called
         // such that resources are cleaned up properly.  In this particular example, close() is
         // invoked when the UI is disconnected from the Service.
-        close();
+        closeGattConnections();
         return super.onUnbind(intent);
     }
 
@@ -240,26 +240,21 @@ public class BluetoothLeService extends Service {
      * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
      * callback.
      */
-    public void disconnect() {
-        /*if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            L.warning("BluetoothAdapter not initialized");
-            return;
+    public void disconnect(String address) {
+        if (mGattHashMap.containsKey(address)) {
+            if (mBluetoothAdapter == null || mGattHashMap.get(address) == null) {
+                L.warning("BluetoothAdapter not initialized");
+                return;
+            }
+            mGattHashMap.get(address).disconnect();
+            mGattHashMap.remove(address);
         }
-        mBluetoothGatt.disconnect();*/
     }
 
     /**
      * After using a given BLE device, the app must call this method to ensure resources are
      * released properly.
      */
-    public void close() {
-        /*if (mBluetoothGatt == null) {
-            return;
-        }
-        mBluetoothGatt.close();
-        mBluetoothGatt = null;*/
-    }
-
     public boolean writeCharacteristic(String address, String value) {
         if (mBluetoothAdapter == null || mGattHashMap.get(address) == null) {
             L.warning("BluetoothAdapter not initialized");
@@ -288,16 +283,12 @@ public class BluetoothLeService extends Service {
         }
     }
 
-    public boolean writeCharacteristic(String value) {
-        // TODO: 10/5/17 Remove this method
-        return true;
-    }
-
     public void closeGattConnections() {
         for (WandDevice wandDevice : Database.mWandDeviceDao.getAllDevices()) {
             if (mGattHashMap.containsKey(wandDevice.address)) {
                 mGattHashMap.get(wandDevice.address).close();
             }
         }
+        mGattHashMap = null;
     }
 }

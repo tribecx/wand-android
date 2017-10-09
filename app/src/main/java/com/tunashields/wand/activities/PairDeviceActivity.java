@@ -258,15 +258,15 @@ public class PairDeviceActivity extends AppCompatActivity {
 
         showProgressDialog(getString(R.string.prompt_linking_device));
 
-        mBluetoothLeService.writeCharacteristic(WandUtils.setEnterPasswordFormat(mPassword));
+        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mPassword));
     }
 
     private void getOwner() {
-        mBluetoothLeService.writeCharacteristic(WandUtils.getOwner());
+        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.getOwner());
     }
 
     private void getState() {
-        mBluetoothLeService.writeCharacteristic(WandUtils.getState());
+        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.getState());
     }
 
     private void showProgressDialog(String message) {
