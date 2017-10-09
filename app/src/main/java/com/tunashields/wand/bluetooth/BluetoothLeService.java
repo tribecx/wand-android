@@ -284,9 +284,11 @@ public class BluetoothLeService extends Service {
     }
 
     public void closeGattConnections() {
-        for (WandDevice wandDevice : Database.mWandDeviceDao.getAllDevices()) {
-            if (mGattHashMap.containsKey(wandDevice.address)) {
-                mGattHashMap.get(wandDevice.address).close();
+        if (mGattHashMap != null) {
+            for (WandDevice wandDevice : Database.mWandDeviceDao.getAllDevices()) {
+                if (mGattHashMap.containsKey(wandDevice.address)) {
+                    mGattHashMap.get(wandDevice.address).close();
+                }
             }
         }
         mGattHashMap = null;
