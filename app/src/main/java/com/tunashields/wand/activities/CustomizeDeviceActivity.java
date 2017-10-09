@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -157,11 +158,19 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                     configureNameAndOwner();
                 }
                 break;
+            case WandAttributes.ENTER_PASSWORD_ERROR:
+                Snackbar.make(findViewById(android.R.id.content), "Sucedió un error al configurar el dispositivo.", Snackbar.LENGTH_LONG).show();
+                finish();
+                break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
                     configureNameAndOwner();
                 }
+                break;
+            case WandAttributes.CHANGE_PASSWORD_ERROR:
+                Snackbar.make(findViewById(android.R.id.content), "Sucedió un error al configurar el dispositivo.", Snackbar.LENGTH_LONG).show();
+                finish();
                 break;
             case WandAttributes.CHANGE_NAME_OK:
                 if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {

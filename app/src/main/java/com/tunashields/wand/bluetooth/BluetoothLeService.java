@@ -70,7 +70,7 @@ public class BluetoothLeService extends Service {
                 broadcastUpdate(intentAction);
                 L.info("Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-                L.info("Attempting to start service discovery:" + mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices());
+                L.info("Attempting to start service discovery: " + mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
