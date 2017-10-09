@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     private final int MY_REQUEST_ENABLE_BT = 101;
     private final int MY_REQUEST_ENABLE_GPS = 102;
     private final int MY_CONFIGURE_DEVICE_REQUEST = 103;
+    private int mItemCurrentPosition;
 
     private BluetoothLeService mBluetoothLeService;
 
@@ -162,13 +163,13 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     finish();
                 }
                 break;
-            /*case MY_CONFIGURE_DEVICE_REQUEST:
-                mFoundedDevicesAddresses.clear();
-                mPairedDevices.clear();
-                mPairedDevices = Database.mWandDeviceDao.getAllDevices();
-                mAdapter.clear();
-                mAdapter.addAll(mPairedDevices);
-                break;*/
+            case MY_CONFIGURE_DEVICE_REQUEST:
+                if (data != null && data.getExtras() != null) {
+                    WandDevice device = data.getExtras().getParcelable(WandDevice.KEY);
+                    if (device != null)
+                        mAdapter.update(mItemCurrentPosition, device);
+                }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
         }
@@ -208,7 +209,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     @Override
-    public void onItemClick(Object object) {
+    public void onItemClick(int position, Object object) {
+        mItemCurrentPosition = position;
         Intent intent = new Intent(MainActivity.this, DeviceDetailActivity.class);
         intent.putExtra(WandDevice.KEY, (WandDevice) object);
         startActivityForResult(intent, MY_CONFIGURE_DEVICE_REQUEST);
@@ -355,6 +357,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     private void processData(String data) {
+        switch (data) {
+        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

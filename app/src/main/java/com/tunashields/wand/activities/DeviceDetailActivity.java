@@ -204,6 +204,10 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 }
                 break;
         }
+
+        Intent intent = new Intent();
+        intent.putExtra(WandDevice.KEY, mWandDevice);
+        setResult(Activity.RESULT_OK, intent);
     }
 
     private void setUpViews() {

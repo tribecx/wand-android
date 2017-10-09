@@ -157,9 +157,9 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             if (mOnItemClickListener != null) {
                 if (mItems.get(getAdapterPosition()) instanceof WandDevice) {
                     if (((WandDevice) mItems.get(getAdapterPosition())).close)
-                        mOnItemClickListener.onItemClick(mItems.get(getAdapterPosition()));
+                        mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
                 } else
-                    mOnItemClickListener.onItemClick(mItems.get(getAdapterPosition()));
+                    mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
             }
         }
     }
@@ -210,7 +210,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     public interface OnItemClickListener {
-        void onItemClick(Object object);
+        void onItemClick(int position, Object object);
     }
 
     public interface OnLockClickListener {
