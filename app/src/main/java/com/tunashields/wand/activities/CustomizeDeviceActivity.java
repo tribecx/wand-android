@@ -8,11 +8,11 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
@@ -159,7 +159,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 }
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
-                Snackbar.make(findViewById(android.R.id.content), "Sucedió un error al configurar el dispositivo.", Snackbar.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Sucedió un error al conectar con el dispositivo.", Toast.LENGTH_LONG).show();
                 finish();
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
@@ -169,7 +169,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 }
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
-                Snackbar.make(findViewById(android.R.id.content), "Sucedió un error al configurar el dispositivo.", Snackbar.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Sucedió un error al cambiar la contraseña, por favor resetee el dispositivo e intentelo de nuevo.", Toast.LENGTH_LONG).show();
                 finish();
                 break;
             case WandAttributes.CHANGE_NAME_OK:

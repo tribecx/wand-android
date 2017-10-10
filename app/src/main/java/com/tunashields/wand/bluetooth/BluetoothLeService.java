@@ -53,8 +53,10 @@ public class BluetoothLeService extends Service {
             "com.tunashields.wand.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE =
             "com.tunashields.wand.ACTION_DATA_AVAILABLE";
-    public final static String ACTION_DEVICE_CONNECTED =
-            "com.tunashields.wand.ACTION_DEVICE_CONNECTED"; // TODO: 10/5/17 Update field with name 'ACTION_PASSWORD_ENTERED' or something like that
+    public final static String ACTION_ENTER_PASSWORD =
+            "com.tunashields.wand.ACTION_ENTER_PASSWORD";
+    public final static String EXTRA_DEVICE_ADDRESS =
+            "com.tunashields.wand.EXTRA_DEVICE_ADDRESS";
     public final static String EXTRA_DATA =
             "com.tunashields.wand.EXTRA_DATA";
 
@@ -105,20 +107,16 @@ public class BluetoothLeService extends Service {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-            byte[] value = characteristic.getValue();
-            String v = new String(value);
-            L.info("onCharacteristicChanged: Value = " + v);
+            String address = gatt.getDevice().getAddress();
+            String value = new String(characteristic.getValue());
 
-            switch (v) {
-                case WandAttributes.DETECT_NEW_CONNECTION:
-                    WandDevice wandDevice = Database.mWandDeviceDao.getDeviceByAddress(gatt.getDevice().getAddress());
-                    if (wandDevice != null)
-                        writeCharacteristic(gatt.getDevice().getAddress(), WandUtils.setEnterPasswordFormat(wandDevice.password));
-
-                    broadcastUpdate(ACTION_DEVICE_CONNECTED, gatt.getDevice().getAddress());
-                    break;
+            if (value.equals(WandAttributes.ENTER_PASSWORD_ERROR)) {
+                if (mGattHashMap.containsKey(address)) {
+                    mGattHashMap.remove(address);
+                }
             }
+
+            broadcastUpdate(ACTION_DATA_AVAILABLE, address, characteristic);
         }
     };
 
@@ -127,16 +125,24 @@ public class BluetoothLeService extends Service {
         sendBroadcast(intent);
     }
 
-    private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
+    private void broadcastUpdate(final String action, final String address) {
         final Intent intent = new Intent(action);
+        intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastUpdate(final String action, final String address, final BluetoothGattCharacteristic characteristic) {
+        final Intent intent = new Intent(action);
+        intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
         final byte[] data = characteristic.getValue();
         intent.putExtra(EXTRA_DATA, new String(data));
         sendBroadcast(intent);
     }
 
-    private void broadcastUpdate(final String action, final String address) {
+    private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
-        intent.putExtra(EXTRA_DATA, address);
+        final byte[] data = characteristic.getValue();
+        intent.putExtra(EXTRA_DATA, new String(data));
         sendBroadcast(intent);
     }
 

@@ -30,6 +30,7 @@ import android.view.View;
 import com.tunashields.wand.R;
 import com.tunashields.wand.adapters.WandDevicesAdapter;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
+import com.tunashields.wand.bluetooth.WandAttributes;
 import com.tunashields.wand.data.Database;
 import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
@@ -89,15 +90,11 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                L.debug(data);
-                processData(data);
-            } else if (BluetoothLeService.ACTION_DEVICE_CONNECTED.equals(action)) {
-                String address = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                if (mPairedDevicesMap != null && mPairedDevicesMap.containsKey(address)) {
-                    if (mAdapter != null)
-                        mAdapter.notifyDeviceFounded(address);
-                }
+
+                L.debug("Processing: " + "Address: " + address + " - Data: " + data);
+                processData(address, data);
             }
         }
     };
@@ -127,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             mScanFilters = new ArrayList<>();
             scanLeDevice(true);
         }
-
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
     }
 
@@ -279,7 +275,11 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             String address = btDevice.getAddress();
 
             if (address != null && mPairedDevicesMap.containsKey(address) && !mFoundedDevicesAddresses.contains(address)) {
-                mBluetoothLeService.connect(address);
+                if (mBluetoothLeService != null) {
+                    if (mBluetoothLeService.connect(address)) {
+                        mFoundedDevicesAddresses.add(address);
+                    }
+                }
             }
         }
 
@@ -356,15 +356,55 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         }
     }
 
-    private void processData(String data) {
+    private void processData(String address, String data) {
+        WandDevice device = mPairedDevicesMap.get(address);
         switch (data) {
+            case WandAttributes.DETECT_NEW_CONNECTION:
+                mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
+                break;
+            case WandAttributes.AUTOMATIC_LOCK:
+                if (device != null) {
+                    device.relay = 1;
+                    Database.mWandDeviceDao.updateDevice(device);
+                    mAdapter.update(device);
+                }
+                break;
+            case WandAttributes.ENTER_PASSWORD_OK:
+                if (address != null) {
+                    if (mPairedDevicesMap != null && mPairedDevicesMap.containsKey(address)) {
+                        if (mAdapter != null)
+                            mAdapter.notifyDeviceFounded(address);
+                    }
+                    mBluetoothLeService.writeCharacteristic(address, WandUtils.getState());
+                }
+                break;
+            default:
+                if (address != null) {
+                    if (data.contains("#E") && data.contains("OK@")) {
+                        if (data.contains(WandAttributes.MODE_MANUAL)) {
+                            device.mode = "M";
+                        } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
+                            device.mode = "A";
+                        }
+                        if (data.contains(WandAttributes.RELAY_ENABLED)) {
+                            device.relay = 1;
+                        } else if (data.contains(WandAttributes.RELAY_DISABLED)) {
+                            device.relay = 0;
+                        }
+                        if (Database.mWandDeviceDao.updateDevice(device)) {
+                            mAdapter.update(device);
+                            L.info("Device " + device.address + " of " + device.owner + " updated.");
+                        }
+                    }
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+                break;
         }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.notifyDataSetChanged();
-            }
-        });
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -373,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
-        intentFilter.addAction(BluetoothLeService.ACTION_DEVICE_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_ENTER_PASSWORD);
         return intentFilter;
     }
 }

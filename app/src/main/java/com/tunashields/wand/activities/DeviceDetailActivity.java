@@ -63,6 +63,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 getVersion();
             } else if (mWandDevice.manufacturing_date == null) {
                 getManufacturingDate();
+            } else {
+                getState();
             }
         }
 
@@ -111,6 +113,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        getState();
     }
 
     @Override
@@ -147,7 +150,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 dismissProgress();
                 break;
             case WandAttributes.AUTOMATIC_LOCK:
-                mWandDevice.relay = 0;
+                mWandDevice.relay = 1;
                 updateUI();
                 updateDB();
                 break;
@@ -175,7 +178,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 updateUI();
                 updateDB();
                 dismissProgress();
-                onResume();
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 mNewPassword = null;
@@ -199,7 +201,23 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 if (data.contains("#F:")) {
                     L.debug(data.substring(3, data.length() - 1));
                     mWandDevice.manufacturing_date = data.substring(3, data.length() - 1);
-                    Database.mWandDeviceDao.updateDevice(mWandDevice);
+                    updateDB();
+                    updateUI();
+                    getState();
+                }
+                if (data.contains("#E") && data.contains("OK@")) {
+                    if (data.contains(WandAttributes.MODE_MANUAL)) {
+                        mWandDevice.mode = "M";
+                    } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
+                        mWandDevice.mode = "A";
+                    }
+
+                    if (data.contains(WandAttributes.RELAY_ENABLED)) {
+                        mWandDevice.relay = 1;
+                    } else if (data.contains(WandAttributes.RELAY_DISABLED)) {
+                        mWandDevice.relay = 0;
+                    }
+                    updateDB();
                     updateUI();
                 }
                 break;
@@ -216,36 +234,35 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
-        if (mWandDevice.mode != null && mWandDevice.mode.equals("A")) {
-            mAutomaticModeView.setChecked(true);
+        if (mWandDevice.relay == 1) {
+            Resources resources = getResources();
+            int vertical_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, resources.getDisplayMetrics());
+            int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, resources.getDisplayMetrics());
 
-            mLockDeviceButton.setText(getString(R.string.label_automatic_lock));
-            mLockDeviceButton.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.text_color_gray_dark));
-            mLockDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
-            mLockDeviceButton.setClickable(false);
+            LayerDrawable layerDrawable = (LayerDrawable) getDrawable(R.drawable.background_locked_device_button);
+            if (layerDrawable != null && layerDrawable.getDrawable(1) != null)
+                layerDrawable.setLayerInset(1, horizontal_margin, vertical_margin, horizontal_margin, vertical_margin);
+
+            mLockDeviceButton.setText("");
+            mLockDeviceButton.setBackground(layerDrawable);
 
         } else {
-            mAutomaticModeView.setChecked(false);
+            if (mWandDevice.mode != null && mWandDevice.mode.equals("A")) {
+                mLockDeviceButton.setText(getString(R.string.label_automatic_lock));
+                mLockDeviceButton.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.text_color_gray_dark));
+                mLockDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
 
-            mLockDeviceButton.setClickable(true);
-
-            if (mWandDevice.relay == 0) {
+            } else if (mWandDevice.relay == 0) {
                 mLockDeviceButton.setBackgroundResource(R.drawable.background_green_borders_button);
                 mLockDeviceButton.setText(getString(R.string.label_lock));
                 mLockDeviceButton.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.text_color_green));
-            } else {
-                Resources resources = getResources();
-                int vertical_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, resources.getDisplayMetrics());
-                int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, resources.getDisplayMetrics());
-
-                LayerDrawable layerDrawable = (LayerDrawable) getDrawable(R.drawable.background_locked_device_button);
-                if (layerDrawable != null && layerDrawable.getDrawable(1) != null)
-                    layerDrawable.setLayerInset(1, horizontal_margin, vertical_margin, horizontal_margin, vertical_margin);
-
-                mLockDeviceButton.setText("");
-                mLockDeviceButton.setBackground(layerDrawable);
             }
         }
+
+        if (mWandDevice.mode != null && mWandDevice.mode.equals("A"))
+            mAutomaticModeView.setChecked(true);
+        else
+            mAutomaticModeView.setChecked(false);
 
         ((TextView) findViewById(R.id.text_wand_device_name)).setText(mWandDevice.name);
         ((TextView) findViewById(R.id.text_wand_device_owner)).setText(mWandDevice.owner != null ? mWandDevice.owner : "");
@@ -269,6 +286,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void getState() {
+        if (mBluetoothLeService != null)
+            mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.getState());
+    }
+
     private void getVersion() {
         mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.getVersion());
     }
@@ -278,7 +300,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     public void onClickLockDevice(View view) {
-        if (mWandDevice.mode != null && mWandDevice.mode.equals("A"))
+        if (mWandDevice.mode != null && mWandDevice.mode.equals("A") && mWandDevice.relay == 0)
             return;
 
         showProgress(getString(R.string.label_sending));
