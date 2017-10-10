@@ -360,7 +360,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         WandDevice device = mPairedDevicesMap.get(address);
         switch (data) {
             case WandAttributes.DETECT_NEW_CONNECTION:
-                mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
+                if (mBluetoothLeService != null && device != null)
+                    mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
                 break;
             case WandAttributes.AUTOMATIC_LOCK:
                 if (device != null) {

@@ -227,10 +227,17 @@ public class PairDeviceActivity extends AppCompatActivity {
                         mWandDevice.relay = 1;
                     }
 
-                    if (Database.mWandDeviceDao.addDevice(mWandDevice)) {
-                        dismissProgressDialog();
-                        showDoneDialog();
+                    if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
+                        if (Database.mWandDeviceDao.addDevice(mWandDevice)) {
+                            dismissProgressDialog();
+                            showDoneDialog();
+                        }
                     }
+                }
+
+                if (data.contains("#P:NO@")) {
+                    dismissProgressDialog();
+                    showErrorDialog();
                 }
                 break;
         }
