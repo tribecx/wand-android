@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     private Handler mHandler;
     private BluetoothLeScanner mLeScanner;
     private ScanSettings mScanSettings;
-    private List<ScanFilter> mScanFilters;
     private static final long SCAN_PERIOD = 10000;
 
     private WandDevicesAdapter mAdapter;
@@ -95,6 +93,11 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
                 L.debug("Processing: " + "Address: " + address + " - Data: " + data);
                 processData(address, data);
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
+                mFoundedDevicesAddresses.remove(address);
+                mAdapter.notifyDeviceDisconnected(address);
+                mBluetoothLeService.removeConnection(address);
             }
         }
     };
@@ -121,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             mScanSettings = new ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .build();
-            mScanFilters = new ArrayList<>();
             scanLeDevice(true);
         }
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
@@ -231,17 +233,21 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
     @Override
     public void onRefresh() {
-        /*if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-                    mFoundedDevicesAddresses.clear();
-                    mAdapter.clear();
-                    mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
-                    mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-                    mScanSettings = new ScanSettings.Builder()
-                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                            .build();
-                    mScanFilters = new ArrayList<>();
-                    scanLeDevice(true);
-                }*/
+
+        for (String address : mFoundedDevicesAddresses) {
+            if (mPairedDevicesMap.containsKey(address)) {
+                mAdapter.notifyDeviceFounded(address);
+            }
+        }
+
+        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
+            mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+            mScanSettings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                    .build();
+            scanLeDevice(true);
+        }
+
         mRefreshDevices.setRefreshing(false);
     }
 
@@ -259,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     mLeScanner.stopScan(mScanCallback);
                 }
             }, SCAN_PERIOD);
-            mLeScanner.startScan(mScanFilters, mScanSettings, mScanCallback);
+            mLeScanner.startScan(null, mScanSettings, mScanCallback);
         } else {
             mLeScanner.stopScan(mScanCallback);
         }

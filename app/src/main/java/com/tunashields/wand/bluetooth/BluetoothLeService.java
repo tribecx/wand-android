@@ -18,7 +18,6 @@ import android.os.IBinder;
 import com.tunashields.wand.data.Database;
 import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
-import com.tunashields.wand.utils.WandUtils;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -79,7 +78,7 @@ public class BluetoothLeService extends Service {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 L.info("Disconnected from GATT server.");
-                broadcastUpdate(intentAction);
+                broadcastUpdate(intentAction, gatt.getDevice().getAddress());
             }
         }
 
@@ -296,9 +295,19 @@ public class BluetoothLeService extends Service {
             for (WandDevice wandDevice : Database.mWandDeviceDao.getAllDevices()) {
                 if (mGattHashMap.containsKey(wandDevice.address)) {
                     mGattHashMap.get(wandDevice.address).close();
+                    mGattHashMap.remove(wandDevice.address);
                 }
             }
         }
         mGattHashMap = null;
+    }
+
+    public void removeConnection(String address){
+        if (mGattHashMap != null) {
+            if (mGattHashMap.containsKey(address)){
+                mGattHashMap.get(address).close();
+                mGattHashMap.remove(address);
+            }
+        }
     }
 }
