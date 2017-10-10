@@ -88,6 +88,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 L.debug(data);
                 processData(data);
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mBluetoothLeService.connect(mWandDevice.address);
             }
         }
     };
@@ -177,12 +179,15 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 mNewPassword = null;
                 updateUI();
                 updateDB();
-                dismissProgress();
+                mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setEnterPasswordFormat(mWandDevice.password));
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 mNewPassword = null;
                 dismissProgress();
                 Toast.makeText(DeviceDetailActivity.this, getString(R.string.error_updating_password), Toast.LENGTH_SHORT).show();
+                break;
+            case WandAttributes.ENTER_PASSWORD_OK:
+                dismissProgress();
                 break;
             default:
                 if (data.contains("#V:")) {

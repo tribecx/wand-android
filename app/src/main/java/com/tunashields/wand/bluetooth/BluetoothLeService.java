@@ -116,6 +116,7 @@ public class BluetoothLeService extends Service {
                 }
             }
 
+            L.debug("onCharacteristicChanged: Address " + address + " - Data " + value);
             broadcastUpdate(ACTION_DATA_AVAILABLE, address, characteristic);
         }
     };
