@@ -18,7 +18,6 @@ import android.os.IBinder;
 import com.tunashields.wand.data.Database;
 import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
-import com.tunashields.wand.utils.WandUtils;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -72,13 +71,14 @@ public class BluetoothLeService extends Service {
                 broadcastUpdate(intentAction);
                 L.info("Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-                L.info("Attempting to start service discovery: " + mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices());
+                if (mGattHashMap.containsKey(gatt.getDevice().getAddress()))
+                    L.info("Attempting to start service discovery: " + mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 L.info("Disconnected from GATT server.");
-                broadcastUpdate(intentAction);
+                broadcastUpdate(intentAction, gatt.getDevice().getAddress());
             }
         }
 
@@ -116,6 +116,7 @@ public class BluetoothLeService extends Service {
                 }
             }
 
+            L.debug("onCharacteristicChanged: Address " + address + " - Data " + value);
             broadcastUpdate(ACTION_DATA_AVAILABLE, address, characteristic);
         }
     };
@@ -294,9 +295,19 @@ public class BluetoothLeService extends Service {
             for (WandDevice wandDevice : Database.mWandDeviceDao.getAllDevices()) {
                 if (mGattHashMap.containsKey(wandDevice.address)) {
                     mGattHashMap.get(wandDevice.address).close();
+                    mGattHashMap.remove(wandDevice.address);
                 }
             }
         }
         mGattHashMap = null;
+    }
+
+    public void removeConnection(String address){
+        if (mGattHashMap != null) {
+            if (mGattHashMap.containsKey(address)){
+                mGattHashMap.get(address).close();
+                mGattHashMap.remove(address);
+            }
+        }
     }
 }
