@@ -99,18 +99,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             return;
         }
 
-        if (wandDevice.mode != null && wandDevice.mode.equals("A")) {
-            holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
-            holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_automatic_lock));
-            holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_gray_dark));
-            return;
-        }
-
-        if (wandDevice.relay == 0) {
-            holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_green_borders_button);
-            holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_lock));
-            holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_green));
-        } else if (wandDevice.relay == 1) {
+        if (wandDevice.relay == 1) {
             Resources resources = mContext.getResources();
             int vertical_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, resources.getDisplayMetrics());
             int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, resources.getDisplayMetrics());
@@ -121,6 +110,16 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             holder.mStatusDeviceButton.setBackground(layerDrawable);
             holder.mStatusDeviceButton.setText("");
+        } else {
+            if (wandDevice.mode != null && wandDevice.mode.equals("A")) {
+                holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
+                holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_automatic_lock));
+                holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_gray_dark));
+            } else if (wandDevice.relay == 0) {
+                holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_green_borders_button);
+                holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_lock));
+                holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_green));
+            }
         }
 
         holder.mStatusDeviceButton.setOnClickListener(new View.OnClickListener() {
@@ -187,6 +186,24 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         mItems.remove(position);
         mItems.add(position, object);
         notifyItemChanged(position);
+    }
+
+    public void update(WandDevice wandDevice) {
+        for (int i = 0; i < mItems.size(); i++) {
+            if (mItems.get(i) instanceof WandDevice) {
+                if (((WandDevice) mItems.get(i)).address.equals(wandDevice.address)) {
+                    ((WandDevice) mItems.get(i)).name = wandDevice.name;
+                    ((WandDevice) mItems.get(i)).owner = wandDevice.owner;
+                    ((WandDevice) mItems.get(i)).password = wandDevice.password;
+                    ((WandDevice) mItems.get(i)).mode = wandDevice.mode;
+                    ((WandDevice) mItems.get(i)).relay = wandDevice.relay;
+                    ((WandDevice) mItems.get(i)).version = wandDevice.version;
+                    ((WandDevice) mItems.get(i)).firmware = wandDevice.firmware;
+                    ((WandDevice) mItems.get(i)).manufacturing_date = wandDevice.manufacturing_date;
+                    notifyItemChanged(i);
+                }
+            }
+        }
     }
 
     public void notifyDeviceFounded(String address) {
