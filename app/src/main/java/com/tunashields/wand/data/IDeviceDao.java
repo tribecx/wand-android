@@ -14,6 +14,8 @@ public interface IDeviceDao {
 
     public boolean updateDevice(WandDevice device);
 
+    public boolean delete(WandDevice device);
+
     public WandDevice getDeviceByAddress(String address);
 
     // get saved devices

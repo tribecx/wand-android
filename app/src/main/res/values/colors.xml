@@ -17,6 +17,7 @@
     <color name="blueberry">#65519d</color>
     <color name="blue_dark">#29235c</color>
     <color name="green">#52BC79</color>
+    <color name="red">#ff3c30</color>
 
     <!-- text colors -->
     <color name="text_color_white">#ffffff</color>

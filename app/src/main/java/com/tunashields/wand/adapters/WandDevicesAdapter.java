@@ -32,8 +32,8 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private Context mContext;
     private ArrayList<Object> mItems;
 
-    OnItemClickListener mOnItemClickListener;
-    OnLockClickListener mOnLockClickListener;
+    private OnItemClickListener mOnItemClickListener;
+    private OnLockClickListener mOnLockClickListener;
 
     public WandDevicesAdapter(Context mContext) {
         this.mContext = mContext;
@@ -204,6 +204,15 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 }
             }
         }
+    }
+
+    public WandDevice get(int position) {
+        return (WandDevice) this.mItems.get(position);
+    }
+
+    public void remove(int position) {
+        this.mItems.remove(position);
+        notifyItemRemoved(position);
     }
 
     public void notifyDeviceFounded(String address) {

@@ -48,6 +48,18 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
     }
 
     @Override
+    public boolean delete(WandDevice device) {
+        String selection = ID + " = ?";
+        String selectionArgs[] = {String.valueOf(device.id)};
+        try {
+            return super.delete(TABLE_DEVICE, selection, selectionArgs) > 0;
+        } catch (SQLiteConstraintException exception) {
+            L.warning("Database: " + exception.getMessage());
+            return false;
+        }
+    }
+
+    @Override
     public WandDevice getDeviceByAddress(String address) {
         String selection = ADDRESS + " = ?";
         String selectionArgs[] = {address};

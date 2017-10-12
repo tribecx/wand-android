@@ -15,6 +15,7 @@
     <string name="label_cancel">Cancelar</string>
     <string name="label_advertisement">Aviso</string>
     <string name="label_next">Siguiente</string>
+    <string name="label_delete">Eliminar</string>
 
     <!-- strings related to splash activity -->
     <string name="prompt_wand_need_access_to_some_permissons">Para que Wand funcione adecuadamente necesitaremos acceso a algunos permisos de tu teléfono.</string>
@@ -30,6 +31,7 @@
     <string name="warning_disable_bluetooth_title">Activa el bluetooth</string>
     <string name="warning_disable_bluetooth_message">Wand es una aplicación que utiliza la tecnología bluetooth para su funcionamiento. Actívalo si quieres usar todo su potencial.</string>
     <string name="warning_disable_gps_message">Wand es una aplicación que utiliza el GPS para su funcionamiento. Actívalo si quieres usar todo su potencial.</string>
+    <string name="warning_delete_device_of_owner">Eliminar %1$s de %2$s</string>
 
     <!-- strings related to add device activity -->
     <string name="label_looking_devices">Buscando\ndispositivos</string>

@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -33,6 +34,7 @@ import com.tunashields.wand.bluetooth.WandAttributes;
 import com.tunashields.wand.data.Database;
 import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
+import com.tunashields.wand.utils.SwipeHelper;
 import com.tunashields.wand.utils.WandUtils;
 
 import java.util.ArrayList;
@@ -201,6 +203,21 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_paired_devices);
         mRecyclerView.setAdapter(mAdapter);
+
+        new SwipeHelper(this, mRecyclerView) {
+            @Override
+            public void instantiateUnderlayButton(RecyclerView.ViewHolder viewHolder, List<UnderlayButton> underlayButtons) {
+                underlayButtons.add(new SwipeHelper.UnderlayButton(
+                        getString(R.string.label_delete), 0, ContextCompat.getColor(getApplicationContext(), R.color.red),
+                        new SwipeHelper.UnderlayButtonClickListener() {
+                            @Override
+                            public void onClick(int pos) {
+                                showDeleteDeviceDialog(pos);
+                            }
+                        }
+                ));
+            }
+        };
 
         mRefreshDevices = (SwipeRefreshLayout) findViewById(R.id.refresh_devices);
         mRefreshDevices.setOnRefreshListener(this);
@@ -422,5 +439,29 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(BluetoothLeService.ACTION_ENTER_PASSWORD);
         return intentFilter;
+    }
+
+    void showDeleteDeviceDialog(final int position) {
+        final WandDevice wandDevice = mAdapter.get(position);
+
+        AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        mDialogBuilder.setTitle(getString(R.string.label_advertisement));
+        mDialogBuilder.setMessage(getString(R.string.warning_delete_device_of_owner, wandDevice.name, wandDevice.owner));
+        mDialogBuilder.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        mDialogBuilder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mBluetoothLeService.disconnect(wandDevice.address);
+                mAdapter.remove(position);
+                Database.mWandDeviceDao.delete(wandDevice);
+                setVisibleLayout();
+            }
+        });
+        mDialogBuilder.show();
     }
 }

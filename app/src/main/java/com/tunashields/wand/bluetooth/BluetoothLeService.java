@@ -71,8 +71,10 @@ public class BluetoothLeService extends Service {
                 broadcastUpdate(intentAction);
                 L.info("Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-                if (mGattHashMap.containsKey(gatt.getDevice().getAddress()))
-                    L.info("Attempting to start service discovery: " + mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices());
+                if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
+                    boolean didStartServiceDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
+                    L.info("Attempting to start service discovery: " + didStartServiceDiscovery);
+                }
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
@@ -302,9 +304,9 @@ public class BluetoothLeService extends Service {
         mGattHashMap = null;
     }
 
-    public void removeConnection(String address){
+    public void removeConnection(String address) {
         if (mGattHashMap != null) {
-            if (mGattHashMap.containsKey(address)){
+            if (mGattHashMap.containsKey(address)) {
                 mGattHashMap.get(address).close();
                 mGattHashMap.remove(address);
             }

@@ -23,6 +23,10 @@ public abstract class DbContentProvider {
         return mSQLiteDatabase.update(tableName, values, selection, selectionArgs);
     }
 
+    public int delete(String tableName, String selection, String[] selectionArgs) {
+        return mSQLiteDatabase.delete(tableName, selection, selectionArgs);
+    }
+
     public Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String sortOrder) {
         return mSQLiteDatabase.query(tableName, columns, selection, selectionArgs, null, null, sortOrder);
     }
