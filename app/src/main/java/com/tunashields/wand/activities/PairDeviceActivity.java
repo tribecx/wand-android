@@ -11,14 +11,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
@@ -47,8 +46,6 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private String mPassword = null;
 
-    private boolean autoSendPassword = false;
-
     private WandDevice mWandDevice;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -59,8 +56,6 @@ public class PairDeviceActivity extends AppCompatActivity {
                 L.error("Unable to initialize Bluetooth");
                 finish();
             }
-            // Automatically connects to the device upon successful start-up initialization.
-            mBluetoothLeService.connect(mDeviceAddress);
         }
 
         @Override
@@ -83,6 +78,11 @@ public class PairDeviceActivity extends AppCompatActivity {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 L.debug(data);
                 processData(data);
+            }
+            if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
+                dismissProgressDialog();
+                Toast.makeText(getApplicationContext(), getString(R.string.error_device_configuration), Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     };
@@ -110,10 +110,6 @@ public class PairDeviceActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBluetoothLeService != null) {
-            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            L.debug("Connect request result=" + result);
-        }
     }
 
     @Override
@@ -157,29 +153,14 @@ public class PairDeviceActivity extends AppCompatActivity {
         mEnterPasswordView = (EditText) findViewById(R.id.edit_enter_password);
         mEnterPasswordView.requestFocus();
 
-        mEnterPasswordView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                autoSendPassword = false;
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
         mEnterPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_GO) {
-                    autoSendPassword = true;
-                    sendPassword();
+                    if (isValidPassword()) {
+                        showProgressDialog(getString(R.string.prompt_linking_device));
+                        mBluetoothLeService.connect(mDeviceAddress);
+                    }
                     return true;
                 }
                 return false;
@@ -197,8 +178,7 @@ public class PairDeviceActivity extends AppCompatActivity {
     private void processData(String data) {
         switch (data) {
             case WandAttributes.DETECT_NEW_CONNECTION:
-                if (autoSendPassword)
-                    sendPassword();
+                sendPassword();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
                 mWandDevice = new WandDevice(mDeviceAddress, mDeviceName, mPassword);
@@ -249,22 +229,31 @@ public class PairDeviceActivity extends AppCompatActivity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ERROR_CONFIGURATION);
         return intentFilter;
     }
 
-    private void sendPassword() {
-        if (mEnterPasswordView == null) return;
+    private boolean isValidPassword() {
+        mEnterPasswordView.setError(null);
 
         mPassword = mEnterPasswordView.getText().toString();
 
         if (TextUtils.isEmpty(mPassword)) {
-            mEnterPasswordView.setText(getString(R.string.error_empty_field));
+            mEnterPasswordView.setError(getString(R.string.error_empty_field));
             mEnterPasswordView.requestFocus();
-            return;
+            return false;
         }
 
-        showProgressDialog(getString(R.string.prompt_linking_device));
+        if (mPassword.length() != 5) {
+            mEnterPasswordView.setError(getString(R.string.error_password_length));
+            mEnterPasswordView.requestFocus();
+            return false;
+        }
 
+        return true;
+    }
+
+    private void sendPassword() {
         mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mPassword));
     }
 

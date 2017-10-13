@@ -87,6 +87,7 @@ public class DeviceScanActivity extends AppCompatActivity {
                 intent.putExtra(PairDeviceActivity.EXTRA_DEVICE_NAME, bluetoothDevice.getName());
                 intent.putExtra(PairDeviceActivity.EXTRA_DEVICE_ADDRESS, bluetoothDevice.getAddress());
                 startActivity(intent);
+                finish();
             }
         });
     }

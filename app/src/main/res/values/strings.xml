@@ -17,6 +17,11 @@
     <string name="label_next">Siguiente</string>
     <string name="label_delete">Eliminar</string>
 
+    <!-- app error strings -->
+    <string name="error_empty_field">Este campo no puede estar vacío</string>
+    <string name="error_password_length">La contraseña debe contener 5 caracteres numéricos</string>
+    <string name="error_device_configuration">Ocurrió un error al tratar de configurar el dispositivo</string>
+
     <!-- strings related to splash activity -->
     <string name="prompt_wand_need_access_to_some_permissons">Para que Wand funcione adecuadamente necesitaremos acceso a algunos permisos de tu teléfono.</string>
     <string name="warning_can_not_scan_without_location_permission">Wand no puede escanear dispositivos sin este permiso.</string>
@@ -56,7 +61,6 @@
     <string name="label_assign_owner">Asignar propietario</string>
     <string name="label_assign_password">Asignar contraseña</string>
     <string name="label_for_your_safety_customize_your_device">Por tu seguridad, debes asignar un nombre, dueño y contraseña nuevos a tu dispositivo</string>
-    <string name="error_empty_field">Este campo no puede estar vacío</string>
     <string name="error_invalid_password">La contraseña debe ser de 5 dígitos</string>
     <string name="label_name_and_owner_added_properly">Nombre, propietario y contraseña\nañadidos correctamente</string>
 

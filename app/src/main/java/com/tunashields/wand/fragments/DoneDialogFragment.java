@@ -61,12 +61,7 @@ public class DoneDialogFragment extends DialogFragment {
                 for (int i = 0; i < fragmentManager.getBackStackEntryCount(); i++) {
                     fragmentManager.popBackStack();
                 }
-                Intent intent = new Intent(getActivity(), MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getActivity().startActivity(intent);
-                getActivity().finishAffinity();
-                dismiss();
+                getActivity().finish();
             }
         };
         Timer timer = new Timer();

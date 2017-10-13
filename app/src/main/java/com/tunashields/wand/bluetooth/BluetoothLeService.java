@@ -19,6 +19,7 @@ import com.tunashields.wand.data.Database;
 import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -36,7 +37,8 @@ public class BluetoothLeService extends Service {
     private BluetoothAdapter mBluetoothAdapter;
     //private String mBluetoothDeviceAddress;
     //private BluetoothGatt mBluetoothGatt;
-    private HashMap<String, BluetoothGatt> mGattHashMap;
+    public HashMap<String, BluetoothGatt> mGattHashMap;
+    public ArrayList<String> mConnectedAddresses;
 
     private int mConnectionState = STATE_DISCONNECTED;
 
@@ -52,12 +54,14 @@ public class BluetoothLeService extends Service {
             "com.tunashields.wand.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE =
             "com.tunashields.wand.ACTION_DATA_AVAILABLE";
-    public final static String ACTION_ENTER_PASSWORD =
-            "com.tunashields.wand.ACTION_ENTER_PASSWORD";
+
     public final static String EXTRA_DEVICE_ADDRESS =
             "com.tunashields.wand.EXTRA_DEVICE_ADDRESS";
     public final static String EXTRA_DATA =
             "com.tunashields.wand.EXTRA_DATA";
+
+    public final static String ERROR_CONFIGURATION =
+            "com.tunashields.wand.ERROR_CONFIGURATION";
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -77,6 +81,13 @@ public class BluetoothLeService extends Service {
                 }
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                /*if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
+                    mGattHashMap.get(gatt.getDevice().getAddress()).close();
+                    mGattHashMap.remove(gatt.getDevice().getAddress());
+                }
+                if (mConnectedAddresses.contains(gatt.getDevice().getAddress())) {
+                    mConnectedAddresses.remove(gatt.getDevice().getAddress());
+                }*/
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 L.info("Disconnected from GATT server.");
@@ -114,6 +125,8 @@ public class BluetoothLeService extends Service {
 
             if (value.equals(WandAttributes.ENTER_PASSWORD_ERROR)) {
                 if (mGattHashMap.containsKey(address)) {
+                    mGattHashMap.get(address).disconnect();
+                    mGattHashMap.get(address).close();
                     mGattHashMap.remove(address);
                 }
             }
@@ -137,13 +150,6 @@ public class BluetoothLeService extends Service {
     private void broadcastUpdate(final String action, final String address, final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
         intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
-        final byte[] data = characteristic.getValue();
-        intent.putExtra(EXTRA_DATA, new String(data));
-        sendBroadcast(intent);
-    }
-
-    private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
-        final Intent intent = new Intent(action);
         final byte[] data = characteristic.getValue();
         intent.putExtra(EXTRA_DATA, new String(data));
         sendBroadcast(intent);
@@ -196,6 +202,9 @@ public class BluetoothLeService extends Service {
         if (mGattHashMap == null)
             mGattHashMap = new HashMap<>();
 
+        if (mConnectedAddresses == null)
+            mConnectedAddresses = new ArrayList<>();
+
         return true;
     }
 
@@ -218,12 +227,13 @@ public class BluetoothLeService extends Service {
         if (mGattHashMap.containsKey(address)) {
             if (mGattHashMap.get(address) != null) {
                 L.debug("Trying to use an existing mBluetoothGatt for connection.");
-                if (mGattHashMap.get(address).connect()) {
+                return true;
+                /*if (mGattHashMap.get(address).connect()) {
                     mConnectionState = STATE_CONNECTING;
                     return true;
                 } else {
                     return false;
-                }
+                }*/
             }
         }
 
@@ -236,28 +246,12 @@ public class BluetoothLeService extends Service {
         // We want to connect automatically to the device, so we are setting the autoConnect
         // parameter to true.
         mGattHashMap.put(address, device.connectGatt(this, true, mGattCallback));
+        mConnectedAddresses.add(address);
 
         L.debug("Trying to create a new connection.");
         //mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
         return true;
-    }
-
-    /**
-     * Disconnects an existing connection or cancel a pending connection. The disconnection result
-     * is reported asynchronously through the
-     * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
-     * callback.
-     */
-    public void disconnect(String address) {
-        if (mGattHashMap.containsKey(address)) {
-            if (mBluetoothAdapter == null || mGattHashMap.get(address) == null) {
-                L.warning("BluetoothAdapter not initialized");
-                return;
-            }
-            mGattHashMap.get(address).disconnect();
-            mGattHashMap.remove(address);
-        }
     }
 
     /**
@@ -269,47 +263,56 @@ public class BluetoothLeService extends Service {
             L.warning("BluetoothAdapter not initialized");
             return false;
         }
-        /*check if the service is available on the device*/
+        /* check if the service is available on the device */
         BluetoothGattService mService = mGattHashMap.get(address).getService(UUID.fromString(WandAttributes.WAND_SERVICE));
         if (mService == null) {
             L.warning("Wand BLE Service not found");
             return false;
         }
-        /*get the read characteristic from the service*/
+        /* get the writable & readable characteristic from the service */
         BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
         if (mCharacteristic == null) {
             L.warning("Wand BLE Characteristic not found");
+            broadcastUpdate(ERROR_CONFIGURATION);
             return false;
         }
-
+        /* add value to write in characteristic */
         mCharacteristic.setValue(value);
 
         if (!mGattHashMap.get(address).writeCharacteristic(mCharacteristic)) {
             L.warning("Failed to write characteristic");
+            broadcastUpdate(ERROR_CONFIGURATION);
             return false;
         } else {
             return true;
         }
     }
 
-    public void closeGattConnections() {
-        if (mGattHashMap != null) {
-            for (WandDevice wandDevice : Database.mWandDeviceDao.getAllDevices()) {
-                if (mGattHashMap.containsKey(wandDevice.address)) {
-                    mGattHashMap.get(wandDevice.address).close();
-                    mGattHashMap.remove(wandDevice.address);
-                }
+    public void closeConnection(String address) {
+        if (mGattHashMap != null && mConnectedAddresses != null) {
+            if (mConnectedAddresses.contains(address)) {
+                mConnectedAddresses.remove(address);
             }
-        }
-        mGattHashMap = null;
-    }
-
-    public void removeConnection(String address) {
-        if (mGattHashMap != null) {
             if (mGattHashMap.containsKey(address)) {
                 mGattHashMap.get(address).close();
                 mGattHashMap.remove(address);
             }
         }
+    }
+
+    public void closeGattConnections() {
+        if (mGattHashMap != null && mConnectedAddresses != null) {
+            for (String address : mConnectedAddresses) {
+                if (mConnectedAddresses.contains(address)) {
+                    mConnectedAddresses.remove(address);
+                }
+                if (mGattHashMap.containsKey(address)) {
+                    mGattHashMap.get(address).disconnect();
+                    mGattHashMap.get(address).close();
+                    mGattHashMap.remove(address);
+                }
+            }
+        }
+        mGattHashMap = null;
     }
 }

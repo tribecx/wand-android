@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
                 mFoundedDevicesAddresses.remove(address);
                 mAdapter.notifyDeviceDisconnected(address);
-                mBluetoothLeService.removeConnection(address);
+                mBluetoothLeService.closeConnection(address);
             }
         }
     };
@@ -110,9 +110,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         setContentView(R.layout.activity_main);
         bindBluetoothService();
         initBluetoothElements();
-        initVariables();
         setUpListElements();
-        setVisibleLayout();
         if (checkGPS()) {
             checkBluetooth();
         }
@@ -121,6 +119,19 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     @Override
     protected void onResume() {
         super.onResume();
+
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+
+        initVariables();
+        populateList();
+        setVisibleLayout();
+
+        if (mBluetoothLeService != null) {
+            for (String address : mBluetoothLeService.mConnectedAddresses) {
+                mAdapter.notifyDeviceFounded(address);
+            }
+        }
+
         if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
             mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
             mScanSettings = new ScanSettings.Builder()
@@ -128,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     .build();
             scanLeDevice(true);
         }
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
     }
 
     @Override
@@ -186,18 +196,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         mHandler = new Handler();
     }
 
-    public void initVariables() {
-        mPairedDevicesMap = new HashMap<>();
-        mFoundedDevicesAddresses = new ArrayList<>();
-        ArrayList<WandDevice> mPairedDevices = Database.mWandDeviceDao.getAllDevices();
-        for (int i = 0; i < mPairedDevices.size(); i++) {
-            mPairedDevicesMap.put(mPairedDevices.get(i).address, mPairedDevices.get(i));
-        }
-    }
-
     public void setUpListElements() {
         mAdapter = new WandDevicesAdapter(this);
-        mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
         mAdapter.setOnItemClickListener(this);
         mAdapter.setOnLockClickListener(this);
 
@@ -221,6 +221,20 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
         mRefreshDevices = (SwipeRefreshLayout) findViewById(R.id.refresh_devices);
         mRefreshDevices.setOnRefreshListener(this);
+    }
+
+    public void initVariables() {
+        mPairedDevicesMap = new HashMap<>();
+        mFoundedDevicesAddresses = new ArrayList<>();
+        ArrayList<WandDevice> mPairedDevices = Database.mWandDeviceDao.getAllDevices();
+        for (int i = 0; i < mPairedDevices.size(); i++) {
+            mPairedDevicesMap.put(mPairedDevices.get(i).address, mPairedDevices.get(i));
+        }
+    }
+
+    private void populateList() {
+        mAdapter.clear();
+        mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
     }
 
     @Override
@@ -437,7 +451,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
-        intentFilter.addAction(BluetoothLeService.ACTION_ENTER_PASSWORD);
+        intentFilter.addAction(BluetoothLeService.ERROR_CONFIGURATION);
         return intentFilter;
     }
 
@@ -456,7 +470,9 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         mDialogBuilder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mBluetoothLeService.disconnect(wandDevice.address);
+                if (mPairedDevicesMap.containsKey(wandDevice.address))
+                    mPairedDevicesMap.remove(wandDevice.address);
+                mBluetoothLeService.closeConnection(wandDevice.address);
                 mAdapter.remove(position);
                 Database.mWandDeviceDao.delete(wandDevice);
                 setVisibleLayout();
