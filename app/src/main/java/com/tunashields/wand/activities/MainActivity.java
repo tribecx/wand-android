@@ -307,10 +307,12 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
             String address = btDevice.getAddress();
 
-            if (address != null && mPairedDevicesMap.containsKey(address) && !mBluetoothLeService.mConnectedAddresses.contains(address)) {
-                if (mBluetoothLeService != null) {
-                    mBluetoothLeService.connect(address);
-                }
+            if (address != null
+                    && mPairedDevicesMap.containsKey(address)
+                    && mBluetoothLeService != null
+                    && mBluetoothLeService.mConnectedAddresses != null
+                    && !mBluetoothLeService.mConnectedAddresses.contains(address)) {
+                mBluetoothLeService.connect(address);
             }
         }
 

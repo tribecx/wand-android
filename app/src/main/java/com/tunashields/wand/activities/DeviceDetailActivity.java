@@ -133,6 +133,10 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private void processData(String data) {
         switch (data) {
+            case WandAttributes.DETECT_NEW_CONNECTION:
+                if (mBluetoothLeService != null && mWandDevice != null)
+                    mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setEnterPasswordFormat(mWandDevice.password));
+                break;
             case WandAttributes.ENABLE_RELAY_OK:
                 mWandDevice.relay = 1;
                 updateUI();
@@ -170,16 +174,14 @@ public class DeviceDetailActivity extends AppCompatActivity {
                     mWandDevice.owner = mNewOwner;
                     mNewOwner = null;
                 }
-                updateUI();
-                updateDB();
-                dismissProgress();
+                mBluetoothLeService.closeConnection(mWandDevice.address);
+                mBluetoothLeService.connect(mWandDevice.address);
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 mWandDevice.password = mNewPassword;
                 mNewPassword = null;
-                updateUI();
-                updateDB();
-                mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setEnterPasswordFormat(mWandDevice.password));
+                mBluetoothLeService.closeConnection(mWandDevice.address);
+                mBluetoothLeService.connect(mWandDevice.address);
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 mNewPassword = null;
@@ -187,6 +189,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 Toast.makeText(DeviceDetailActivity.this, getString(R.string.error_updating_password), Toast.LENGTH_SHORT).show();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
+                updateUI();
+                updateDB();
                 dismissProgress();
                 break;
             default:

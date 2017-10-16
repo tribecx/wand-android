@@ -188,6 +188,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword, "M", 0, true))) {
                             dismissProgressDialog();
+                            mBluetoothLeService.closeConnection(mDeviceAddress);
                             showDoneDialog();
                         }
                     }
