@@ -294,7 +294,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             }, SCAN_PERIOD);
             mLeScanner.startScan(null, mScanSettings, mScanCallback);
         } else {
-            mLeScanner.stopScan(mScanCallback);
+            if (mLeScanner != null)
+                mLeScanner.stopScan(mScanCallback);
         }
     }
 
