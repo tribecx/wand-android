@@ -455,9 +455,19 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     void showDeleteDeviceDialog(final int position) {
         final WandDevice wandDevice = mAdapter.get(position);
 
+        String name = wandDevice.name;
+        if (name.contains("\r\n")) {
+            name = name.split("\r\n")[0];
+        }
+
+        String owner = wandDevice.owner;
+        if (owner.contains("\r\n")) {
+            owner = owner.split("\r\n")[0];
+        }
+
         AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(MainActivity.this);
         mDialogBuilder.setTitle(getString(R.string.label_advertisement));
-        mDialogBuilder.setMessage(getString(R.string.warning_delete_device_of_owner, wandDevice.name, wandDevice.owner));
+        mDialogBuilder.setMessage(getString(R.string.warning_delete_device_of_owner, name, owner));
         mDialogBuilder.setNegativeButton(getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
