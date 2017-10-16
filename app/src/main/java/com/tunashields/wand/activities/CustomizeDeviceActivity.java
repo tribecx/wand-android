@@ -79,6 +79,9 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 L.debug(data);
                 processData(data);
             }
+            if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mBluetoothLeService.connect(mDeviceAddress);
+            }
         }
     };
 
@@ -137,6 +140,14 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (mBluetoothLeService != null) {
+            mBluetoothLeService.closeConnection(mDeviceAddress);
+        }
     }
 
     private void processData(String data) {
@@ -247,6 +258,15 @@ public class CustomizeDeviceActivity extends AppCompatActivity
     private void showProgressDialog(String message) {
         mProgressDialogFragment = ProgressDialogFragment.newInstance(message);
         mProgressDialogFragment.setCancelable(false);
+        mProgressDialogFragment.setOnCancelClickListener(new ProgressDialogFragment.OnCancelClickListener() {
+            @Override
+            public void onCancel() {
+                if (mBluetoothLeService != null)
+                    mBluetoothLeService.closeConnection(mDeviceAddress);
+
+                finish();
+            }
+        });
         mProgressDialogFragment.show(getSupportFragmentManager(), "progress_dialog");
     }
 

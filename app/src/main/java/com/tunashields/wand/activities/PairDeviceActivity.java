@@ -268,6 +268,15 @@ public class PairDeviceActivity extends AppCompatActivity {
     private void showProgressDialog(String message) {
         mProgressDialogFragment = ProgressDialogFragment.newInstance(message);
         mProgressDialogFragment.setCancelable(false);
+        mProgressDialogFragment.setOnCancelClickListener(new ProgressDialogFragment.OnCancelClickListener() {
+            @Override
+            public void onCancel() {
+                if (mBluetoothLeService != null)
+                    mBluetoothLeService.closeConnection(mDeviceAddress);
+
+                finish();
+            }
+        });
         mProgressDialogFragment.show(getSupportFragmentManager(), "progress_dialog");
     }
 

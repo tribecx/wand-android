@@ -15,8 +15,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
-import com.tunashields.wand.data.Database;
-import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
 
 import java.util.ArrayList;
@@ -227,13 +225,12 @@ public class BluetoothLeService extends Service {
         if (mGattHashMap.containsKey(address)) {
             if (mGattHashMap.get(address) != null) {
                 L.debug("Trying to use an existing mBluetoothGatt for connection.");
-                return true;
-                /*if (mGattHashMap.get(address).connect()) {
+                if (mGattHashMap.get(address).connect()) {
                     mConnectionState = STATE_CONNECTING;
                     return true;
                 } else {
                     return false;
-                }*/
+                }
             }
         }
 

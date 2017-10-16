@@ -23,6 +23,8 @@ public class ProgressDialogFragment extends DialogFragment {
 
     private String mMessage = null;
 
+    private OnCancelClickListener mOnCancelClickListener;
+
     public static ProgressDialogFragment newInstance(String mMessage) {
         ProgressDialogFragment fragment = new ProgressDialogFragment();
         Bundle args = new Bundle();
@@ -50,7 +52,8 @@ public class ProgressDialogFragment extends DialogFragment {
         view.findViewById(R.id.button_cancel).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().finish();
+                if (mOnCancelClickListener != null)
+                    mOnCancelClickListener.onCancel();
             }
         });
         return view;
@@ -66,5 +69,13 @@ public class ProgressDialogFragment extends DialogFragment {
             if (dialog.getWindow() != null)
                 dialog.getWindow().setLayout(width, height);
         }
+    }
+
+    public interface OnCancelClickListener {
+        void onCancel();
+    }
+
+    public void setOnCancelClickListener(OnCancelClickListener mOnCancelClickListener) {
+        this.mOnCancelClickListener = mOnCancelClickListener;
     }
 }

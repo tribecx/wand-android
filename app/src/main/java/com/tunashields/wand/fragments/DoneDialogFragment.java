@@ -1,7 +1,6 @@
 package com.tunashields.wand.fragments;
 
 import android.app.Dialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -12,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.tunashields.wand.R;
-import com.tunashields.wand.activities.MainActivity;
 
 import java.util.Timer;
 import java.util.TimerTask;
