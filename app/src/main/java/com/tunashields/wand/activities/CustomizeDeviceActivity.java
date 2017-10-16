@@ -170,7 +170,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 }
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
-                Toast.makeText(getApplicationContext(), "Sucedió un error al conectar con el dispositivo.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.error_connecting_device), Toast.LENGTH_LONG).show();
                 finish();
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
@@ -180,7 +180,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 }
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
-                Toast.makeText(getApplicationContext(), "Sucedió un error al cambiar la contraseña, por favor resetee el dispositivo e intentelo de nuevo.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.error_changing_password), Toast.LENGTH_LONG).show();
                 finish();
                 break;
             case WandAttributes.CHANGE_NAME_OK:

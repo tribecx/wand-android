@@ -176,12 +176,16 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 }
                 mBluetoothLeService.closeConnection(mWandDevice.address);
                 mBluetoothLeService.connect(mWandDevice.address);
+                dismissProgress();
+                showProgress(getString(R.string.label_connecting));
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 mWandDevice.password = mNewPassword;
                 mNewPassword = null;
                 mBluetoothLeService.closeConnection(mWandDevice.address);
                 mBluetoothLeService.connect(mWandDevice.address);
+                dismissProgress();
+                showProgress(getString(R.string.label_connecting));
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 mNewPassword = null;

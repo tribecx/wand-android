@@ -290,6 +290,7 @@ public class BluetoothLeService extends Service {
                 mConnectedAddresses.remove(address);
             }
             if (mGattHashMap.containsKey(address)) {
+                mGattHashMap.get(address).disconnect();
                 mGattHashMap.get(address).close();
                 mGattHashMap.remove(address);
             }

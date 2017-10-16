@@ -18,35 +18,35 @@
     <string name="label_delete">Eliminar</string>
 
     <!-- app error strings -->
-    <string name="error_empty_field">Este campo no puede estar vacío</string>
-    <string name="error_password_length">La contraseña debe contener 5 caracteres numéricos</string>
-    <string name="error_device_configuration">Ocurrió un error al tratar de configurar el dispositivo</string>
+    <string name="error_empty_field">Este campo no puede estar vacío.</string>
+    <string name="error_password_length">La contraseña debe contener 5 caracteres numéricos.</string>
+    <string name="error_device_configuration">Ocurrió un error al tratar de configurar el dispositivo.</string>
 
     <!-- strings related to splash activity -->
     <string name="prompt_wand_need_access_to_some_permissons">Para que Wand funcione adecuadamente necesitaremos acceso a algunos permisos de tu teléfono.</string>
     <string name="warning_can_not_scan_without_location_permission">Wand no puede escanear dispositivos sin este permiso.</string>
 
     <!-- strings related to onboarding activity -->
-    <string name="label_onboarding_section_0">Wand es una plataforma\ndigital para controlar tus cosas</string>
-    <string name="label_onboarding_section_1">Funciona a través de tecnología\ninalámbrica bluetooth</string>
-    <string name="label_onboarding_section_2">Controla los dispositivos\ncercanos a wand</string>
+    <string name="label_onboarding_section_0">Wand es una plataforma\ndigital para controlar tus cosas.</string>
+    <string name="label_onboarding_section_1">Funciona a través de tecnología\ninalámbrica bluetooth.</string>
+    <string name="label_onboarding_section_2">Controla los dispositivos\ncercanos a wand.</string>
     <string name="label_onboarding_section_3">¡Que empiece la magia!</string>
 
     <!-- strings related to main activity -->
     <string name="warning_disable_bluetooth_title">Activa el bluetooth</string>
     <string name="warning_disable_bluetooth_message">Wand es una aplicación que utiliza la tecnología bluetooth para su funcionamiento. Actívalo si quieres usar todo su potencial.</string>
     <string name="warning_disable_gps_message">Wand es una aplicación que utiliza el GPS para su funcionamiento. Actívalo si quieres usar todo su potencial.</string>
-    <string name="warning_delete_device_of_owner">Eliminar %1$s de %2$s</string>
+    <string name="warning_delete_device_of_owner">Eliminar %1$s de %2$s.</string>
 
     <!-- strings related to add device activity -->
     <string name="label_looking_devices">Buscando\ndispositivos</string>
     <string name="label_new_device">Dispositivo nuevo</string>
 
     <!-- strings related to pair device activity -->
-    <string name="label_insert_manual_code">Introduce el código incluído en el\nmanual del dispositivo</string>
-    <string name="prompt_detected_new_device_will_start_configuration">Detectamos que es un dispositivo nuevo, comenzaremos con la configuración</string>
-    <string name="label_device_added_correctly">Dispositivo añadido\ncorrectamente</string>
-    <string name="error_link">Error en el enlace</string>
+    <string name="label_insert_manual_code">Introduce el código incluído en el\nmanual del dispositivo.</string>
+    <string name="prompt_detected_new_device_will_start_configuration">Detectamos que es un dispositivo nuevo, comenzaremos con la configuración.</string>
+    <string name="label_device_added_correctly">Dispositivo añadido\ncorrectamente.</string>
+    <string name="error_link">Error en el enlace.</string>
     <string name="label_tips">Tips</string>
     <string name="label_tip_close">Asegúrese de encontrarse cerca del dispositivo Wand, máximo 10m.</string>
     <string name="label_tip_reset_bluetooth">Si la conexión no se logró, deshabilite el bluetooth y habilitelo de nuevo.</string>
@@ -60,9 +60,11 @@
     <string name="label_assign_name">Asignar nombre</string>
     <string name="label_assign_owner">Asignar propietario</string>
     <string name="label_assign_password">Asignar contraseña</string>
-    <string name="label_for_your_safety_customize_your_device">Por tu seguridad, debes asignar un nombre, dueño y contraseña nuevos a tu dispositivo</string>
+    <string name="label_for_your_safety_customize_your_device">Por tu seguridad, debes asignar un nombre, dueño y contraseña nuevos a tu dispositivo.</string>
     <string name="error_invalid_password">La contraseña debe ser de 5 dígitos</string>
-    <string name="label_name_and_owner_added_properly">Nombre, propietario y contraseña\nañadidos correctamente</string>
+    <string name="label_name_and_owner_added_properly">Nombre, propietario y contraseña\nañadidos correctamente.</string>
+    <string name="error_connecting_device">Sucedió un error al conectar con el dispositivo.</string>
+    <string name="error_changing_password">Sucedió un error al cambiar la contraseña, por favor resetee el dispositivo e intentelo de nuevo.</string>
 
     <!-- strings related to settings screen -->
     <string name="label_information_config">Información</string>
