@@ -107,6 +107,7 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
             device.version = cursor.getString(cursor.getColumnIndex(VERSION));
             device.firmware = cursor.getString(cursor.getColumnIndex(FIRMWARE));
             device.manufacturing_date = cursor.getString(cursor.getColumnIndex(MANUFACTURING_DATE));
+            device.is_owner = cursor.getInt(cursor.getColumnIndex(IS_OWNER)) > 0;
         }
         return device;
     }
@@ -122,6 +123,7 @@ public class WandDeviceDao extends DbContentProvider implements IDeviceSchema, I
         contentValues.put(VERSION, device.version);
         contentValues.put(FIRMWARE, device.firmware);
         contentValues.put(MANUFACTURING_DATE, device.manufacturing_date);
+        contentValues.put(IS_OWNER, device.is_owner);
     }
 
     private ContentValues getContentValues() {

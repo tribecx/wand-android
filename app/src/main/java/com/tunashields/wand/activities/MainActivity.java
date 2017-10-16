@@ -44,8 +44,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements WandDevicesAdapter.OnItemClickListener,
         WandDevicesAdapter.OnLockClickListener, SwipeRefreshLayout.OnRefreshListener {
 
-    private HashMap<String, WandDevice> mPairedDevicesMap;
-    private ArrayList<String> mFoundedDevicesAddresses;
+    private HashMap<String, WandDevice> mPairedDevicesMap = new HashMap<>();
 
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
@@ -95,9 +94,9 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
                 L.debug("Processing: " + "Address: " + address + " - Data: " + data);
                 processData(address, data);
+
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
-                mFoundedDevicesAddresses.remove(address);
                 mAdapter.notifyDeviceDisconnected(address);
                 mBluetoothLeService.closeConnection(address);
             }
@@ -125,20 +124,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         initVariables();
         populateList();
         setVisibleLayout();
-
-        if (mBluetoothLeService != null) {
-            for (String address : mBluetoothLeService.mConnectedAddresses) {
-                mAdapter.notifyDeviceFounded(address);
-            }
-        }
-
-        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-            mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-            mScanSettings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .build();
-            scanLeDevice(true);
-        }
+        getConnectedDevices();
+        initScanner();
     }
 
     @Override
@@ -224,17 +211,29 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     public void initVariables() {
-        mPairedDevicesMap = new HashMap<>();
-        mFoundedDevicesAddresses = new ArrayList<>();
         ArrayList<WandDevice> mPairedDevices = Database.mWandDeviceDao.getAllDevices();
         for (int i = 0; i < mPairedDevices.size(); i++) {
-            mPairedDevicesMap.put(mPairedDevices.get(i).address, mPairedDevices.get(i));
+            if (!mPairedDevicesMap.containsKey(mPairedDevices.get(i).address)) {
+                mPairedDevicesMap.put(mPairedDevices.get(i).address, mPairedDevices.get(i));
+            }
         }
     }
 
     private void populateList() {
-        mAdapter.clear();
+        if (mAdapter.getItemCount() > 0) {
+            mAdapter.clear();
+        }
         mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
+    }
+
+    private void getConnectedDevices() {
+        if (mBluetoothLeService != null) {
+            for (String address : mBluetoothLeService.mConnectedAddresses) {
+                if (mPairedDevicesMap.containsKey(address)) {
+                    mAdapter.notifyDeviceFounded(address);
+                }
+            }
+        }
     }
 
     @Override
@@ -264,21 +263,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
     @Override
     public void onRefresh() {
-
-        for (String address : mFoundedDevicesAddresses) {
-            if (mPairedDevicesMap.containsKey(address)) {
-                mAdapter.notifyDeviceFounded(address);
-            }
-        }
-
-        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-            mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-            mScanSettings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .build();
-            scanLeDevice(true);
-        }
-
+        getConnectedDevices();
+        initScanner();
         mRefreshDevices.setRefreshing(false);
     }
 
@@ -286,6 +272,16 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         boolean value = mAdapter.getItemCount() <= 0;
         findViewById(R.id.image_no_paired_devices).setVisibility(value ? View.VISIBLE : View.GONE);
         findViewById(R.id.layout_paired_devices).setVisibility(value ? View.GONE : View.VISIBLE);
+    }
+
+    private void initScanner() {
+        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
+            mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+            mScanSettings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                    .build();
+            scanLeDevice(true);
+        }
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -311,11 +307,9 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
             String address = btDevice.getAddress();
 
-            if (address != null && mPairedDevicesMap.containsKey(address) && !mFoundedDevicesAddresses.contains(address)) {
+            if (address != null && mPairedDevicesMap.containsKey(address) && !mBluetoothLeService.mConnectedAddresses.contains(address)) {
                 if (mBluetoothLeService != null) {
-                    if (mBluetoothLeService.connect(address)) {
-                        mFoundedDevicesAddresses.add(address);
-                    }
+                    mBluetoothLeService.connect(address);
                 }
             }
         }

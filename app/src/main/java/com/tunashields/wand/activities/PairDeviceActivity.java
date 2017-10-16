@@ -181,7 +181,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                 sendPassword();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
-                mWandDevice = new WandDevice(mDeviceAddress, mDeviceName, mPassword);
+                mWandDevice = new WandDevice(mDeviceAddress, mDeviceName, mPassword, false);
                 getOwner();
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:

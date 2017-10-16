@@ -1,5 +1,6 @@
 package com.tunashields.wand.data;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -15,6 +16,7 @@ public class AppPreferences {
 
     private static final String FIRST_TIME_OPEN = "first_time_open";
 
+    @SuppressLint("CommitPrefEdits")
     public AppPreferences(Context context) {
         mPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         mEditor = mPreferences.edit();

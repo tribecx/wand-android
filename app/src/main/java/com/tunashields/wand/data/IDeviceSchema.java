@@ -18,6 +18,7 @@ public interface IDeviceSchema {
     String VERSION = "version";
     String FIRMWARE = "firmware";
     String MANUFACTURING_DATE = "manufacturing_date";
+    String IS_OWNER = "is_owner";
 
     String CREATE_TABLE_DEVICE = "CREATE TABLE " + TABLE_DEVICE + "(" +
             ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -29,8 +30,9 @@ public interface IDeviceSchema {
             RELAY + " INTEGER," +
             VERSION + " TEXT," +
             FIRMWARE + " TEXT," +
-            MANUFACTURING_DATE + " TEXT)";
+            MANUFACTURING_DATE + " TEXT," +
+            IS_OWNER + " BOOLEAN)";
 
     String[] DEVICE_COLUMNS = new String[]{ID, ADDRESS, NAME,
-            OWNER, PASSWORD, MODE, RELAY, VERSION, FIRMWARE, MANUFACTURING_DATE};
+            OWNER, PASSWORD, MODE, RELAY, VERSION, FIRMWARE, MANUFACTURING_DATE, IS_OWNER};
 }

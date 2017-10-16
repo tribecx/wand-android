@@ -443,7 +443,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     public void onClickChangePassword(View view) {
-        showChangePasswordDialog();
+        if (mWandDevice.is_owner)
+            showChangePasswordDialog();
     }
 
     private void showChangePasswordDialog() {

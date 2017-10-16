@@ -186,7 +186,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             case WandAttributes.CHANGE_NAME_OK:
                 if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
-                        if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword, "M", 0))) {
+                        if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword, "M", 0, true))) {
                             dismissProgressDialog();
                             showDoneDialog();
                         }

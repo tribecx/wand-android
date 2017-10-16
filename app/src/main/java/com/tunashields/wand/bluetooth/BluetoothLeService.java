@@ -221,7 +221,7 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
-        // Previously connected device.  Try to reconnect.
+        // Previously connected device. Try to reconnect.
         if (mGattHashMap.containsKey(address)) {
             if (mGattHashMap.get(address) != null) {
                 L.debug("Trying to use an existing mBluetoothGatt for connection.");
@@ -246,7 +246,6 @@ public class BluetoothLeService extends Service {
         mConnectedAddresses.add(address);
 
         L.debug("Trying to create a new connection.");
-        //mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
         return true;
     }
