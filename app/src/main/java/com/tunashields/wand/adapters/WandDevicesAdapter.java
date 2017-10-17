@@ -40,6 +40,37 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         mItems = new ArrayList<>();
     }
 
+    private class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        ConstraintLayout mRootItemLayout;
+        ImageView mWandDeviceImageView;
+        View mSeparatorView;
+        TextView mWandDeviceNameView;
+        TextView mWandDeviceOwnerView;
+        Button mStatusDeviceButton;
+
+        ViewHolder(View itemView) {
+            super(itemView);
+            itemView.setOnClickListener(this);
+            mRootItemLayout = itemView.findViewById(R.id.item_wand_device);
+            mWandDeviceImageView = itemView.findViewById(R.id.image_wand_device_type);
+            mSeparatorView = itemView.findViewById(R.id.separator);
+            mWandDeviceNameView = itemView.findViewById(R.id.text_wand_device_name);
+            mWandDeviceOwnerView = itemView.findViewById(R.id.text_wand_device_owner);
+            mStatusDeviceButton = itemView.findViewById(R.id.button_wand_device_state);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (mOnItemClickListener != null) {
+                if (mItems.get(getAdapterPosition()) instanceof WandDevice) {
+                    if (((WandDevice) mItems.get(getAdapterPosition())).close)
+                        mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
+                } else
+                    mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
+            }
+        }
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_wand_device, parent, false));
@@ -100,67 +131,58 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         if (wandDevice.relay == 1) {
-            Resources resources = mContext.getResources();
-            int vertical_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, resources.getDisplayMetrics());
-            int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, resources.getDisplayMetrics());
-
-            LayerDrawable layerDrawable = (LayerDrawable) mContext.getDrawable(R.drawable.background_locked_device_button);
-            if (layerDrawable != null && layerDrawable.getDrawable(1) != null)
-                layerDrawable.setLayerInset(1, horizontal_margin, vertical_margin, horizontal_margin, vertical_margin);
-
-            holder.mStatusDeviceButton.setBackground(layerDrawable);
-            holder.mStatusDeviceButton.setText("");
-        } else {
-            if (wandDevice.mode != null && wandDevice.mode.equals("A")) {
-                holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
-                holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_automatic_lock));
-                holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_gray_dark));
-            } else if (wandDevice.relay == 0) {
-                holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_green_borders_button);
-                holder.mStatusDeviceButton.setText(mContext.getString(R.string.label_lock));
-                holder.mStatusDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_green));
-            }
+            setUpLockedButton(holder.mStatusDeviceButton, holder.getAdapterPosition(), wandDevice);
+            return;
         }
 
-        holder.mStatusDeviceButton.setOnClickListener(new View.OnClickListener() {
+        if (wandDevice.mode != null && wandDevice.mode.equals("A")) {
+            setUpAutomaticLockButton(holder.mStatusDeviceButton);
+        } else if (wandDevice.relay == 0) {
+            setUpLockButton(holder.mStatusDeviceButton, holder.getAdapterPosition(), wandDevice);
+        }
+    }
+
+    private void setUpLockedButton(Button lockedDeviceButton, final int position, final WandDevice wandDevice) {
+        Resources resources = mContext.getResources();
+        int vertical_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, resources.getDisplayMetrics());
+        int horizontal_margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, resources.getDisplayMetrics());
+
+        LayerDrawable layerDrawable = (LayerDrawable) mContext.getDrawable(R.drawable.background_locked_device_button);
+        if (layerDrawable != null && layerDrawable.getDrawable(1) != null)
+            layerDrawable.setLayerInset(1, horizontal_margin, vertical_margin, horizontal_margin, vertical_margin);
+
+        lockedDeviceButton.setBackground(layerDrawable);
+        lockedDeviceButton.setText("");
+        lockedDeviceButton.setClickable(true);
+        lockedDeviceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mOnLockClickListener != null) {
-                    mOnLockClickListener.onLock(holder.getAdapterPosition(), wandDevice);
-                }
+                if (mOnLockClickListener != null)
+                    mOnLockClickListener.onLock(position, wandDevice);
             }
         });
     }
 
-    private class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        ConstraintLayout mRootItemLayout;
-        ImageView mWandDeviceImageView;
-        View mSeparatorView;
-        TextView mWandDeviceNameView;
-        TextView mWandDeviceOwnerView;
-        Button mStatusDeviceButton;
+    private void setUpAutomaticLockButton(Button automaticLockButton) {
+        automaticLockButton.setBackgroundResource(R.drawable.background_automatic_lock_button);
+        automaticLockButton.setText(mContext.getString(R.string.label_automatic_lock));
+        automaticLockButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_gray_dark));
+        automaticLockButton.setClickable(false);
+        automaticLockButton.setOnClickListener(null);
+    }
 
-        ViewHolder(View itemView) {
-            super(itemView);
-            itemView.setOnClickListener(this);
-            mRootItemLayout = itemView.findViewById(R.id.item_wand_device);
-            mWandDeviceImageView = itemView.findViewById(R.id.image_wand_device_type);
-            mSeparatorView = itemView.findViewById(R.id.separator);
-            mWandDeviceNameView = itemView.findViewById(R.id.text_wand_device_name);
-            mWandDeviceOwnerView = itemView.findViewById(R.id.text_wand_device_owner);
-            mStatusDeviceButton = itemView.findViewById(R.id.button_wand_device_state);
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (mOnItemClickListener != null) {
-                if (mItems.get(getAdapterPosition()) instanceof WandDevice) {
-                    if (((WandDevice) mItems.get(getAdapterPosition())).close)
-                        mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
-                } else
-                    mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
+    private void setUpLockButton(Button lockDeviceButton, final int position, final WandDevice wandDevice) {
+        lockDeviceButton.setBackgroundResource(R.drawable.background_green_borders_button);
+        lockDeviceButton.setText(mContext.getString(R.string.label_lock));
+        lockDeviceButton.setTextColor(ContextCompat.getColor(mContext, R.color.text_color_green));
+        lockDeviceButton.setClickable(true);
+        lockDeviceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mOnLockClickListener != null)
+                    mOnLockClickListener.onLock(position, wandDevice);
             }
-        }
+        });
     }
 
     public void clear() {
