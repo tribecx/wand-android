@@ -336,7 +336,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     public void onClickChangeName(View view) {
-        showChangeNameDialog();
+        if (mWandDevice.is_owner)
+            showChangeNameDialog();
     }
 
     private void showChangeNameDialog() {
@@ -395,7 +396,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     public void onClickChangeOwner(View view) {
-        showChangeOwnerDialog();
+        if (mWandDevice.is_owner)
+            showChangeOwnerDialog();
     }
 
     private void showChangeOwnerDialog() {
