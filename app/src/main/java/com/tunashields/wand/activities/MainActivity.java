@@ -323,8 +323,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             if (address != null
                     && mPairedDevicesMap.containsKey(address)
                     && mBluetoothLeService != null
-                    && mBluetoothLeService.mConnectedAddresses != null
-                    && !mBluetoothLeService.mConnectedAddresses.contains(address)) {
+                    && mBluetoothLeService.mGattHashMap != null
+                    && !mBluetoothLeService.mGattHashMap.containsKey(address)) {
                 mBluetoothLeService.connect(address);
             }
         }

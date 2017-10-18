@@ -117,7 +117,9 @@ public class BluetoothLeService extends Service {
             switch (value) {
                 case WandAttributes.ENTER_PASSWORD_OK:
                     if (mGattHashMap.containsKey(address)) {
-                        mConnectedAddresses.add(address);
+                        if (!mConnectedAddresses.contains(address)) {
+                            mConnectedAddresses.add(address);
+                        }
                     }
                     break;
                 case WandAttributes.ENTER_PASSWORD_ERROR:
@@ -249,10 +251,35 @@ public class BluetoothLeService extends Service {
         return true;
     }
 
-    /**
-     * After using a given BLE device, the app must call this method to ensure resources are
-     * released properly.
-     */
+    public void closeConnection(String address) {
+        if (mGattHashMap != null && mConnectedAddresses != null) {
+            if (mConnectedAddresses.contains(address)) {
+                mConnectedAddresses.remove(address);
+            }
+            if (mGattHashMap.containsKey(address)) {
+                mGattHashMap.get(address).disconnect();
+                mGattHashMap.get(address).close();
+                mGattHashMap.remove(address);
+            }
+        }
+    }
+
+    public void closeGattConnections() {
+        if (mGattHashMap != null && mConnectedAddresses != null) {
+            for (String address : mConnectedAddresses) {
+                if (mConnectedAddresses.contains(address)) {
+                    mConnectedAddresses.remove(address);
+                }
+                if (mGattHashMap.containsKey(address)) {
+                    mGattHashMap.get(address).disconnect();
+                    mGattHashMap.get(address).close();
+                    mGattHashMap.remove(address);
+                }
+            }
+        }
+        mGattHashMap = null;
+    }
+
     public boolean writeCharacteristic(String address, String value) {
         if (mBluetoothAdapter == null || mGattHashMap.get(address) == null) {
             L.warning("BluetoothAdapter not initialized");
@@ -281,34 +308,5 @@ public class BluetoothLeService extends Service {
         } else {
             return true;
         }
-    }
-
-    public void closeConnection(String address) {
-        if (mGattHashMap != null && mConnectedAddresses != null) {
-            if (mConnectedAddresses.contains(address)) {
-                mConnectedAddresses.remove(address);
-            }
-            if (mGattHashMap.containsKey(address)) {
-                mGattHashMap.get(address).disconnect();
-                mGattHashMap.get(address).close();
-                mGattHashMap.remove(address);
-            }
-        }
-    }
-
-    public void closeGattConnections() {
-        if (mGattHashMap != null && mConnectedAddresses != null) {
-            for (String address : mConnectedAddresses) {
-                if (mConnectedAddresses.contains(address)) {
-                    mConnectedAddresses.remove(address);
-                }
-                if (mGattHashMap.containsKey(address)) {
-                    mGattHashMap.get(address).disconnect();
-                    mGattHashMap.get(address).close();
-                    mGattHashMap.remove(address);
-                }
-            }
-        }
-        mGattHashMap = null;
     }
 }
