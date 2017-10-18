@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
@@ -19,6 +20,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -40,6 +42,7 @@ import com.tunashields.wand.utils.WandUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements WandDevicesAdapter.OnItemClickListener,
         WandDevicesAdapter.OnLockClickListener, SwipeRefreshLayout.OnRefreshListener {
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     private Handler mHandler;
     private BluetoothLeScanner mLeScanner;
     private ScanSettings mScanSettings;
+    private List<ScanFilter> mScanFilters;
     private static final long SCAN_PERIOD = 10000;
 
     private WandDevicesAdapter mAdapter;
@@ -131,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     @Override
     protected void onPause() {
         super.onPause();
-        scanLeDevice(false);
+        stopScan();
         unregisterReceiver(mGattUpdateReceiver);
     }
 
@@ -264,7 +268,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     @Override
     public void onRefresh() {
         getConnectedDevices();
-        initScanner();
+        stopScan(); // Stop previously initialized scanner
+        startScan(); // Start scan BLE devices
         mRefreshDevices.setRefreshing(false);
     }
 
@@ -280,23 +285,30 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             mScanSettings = new ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .build();
-            scanLeDevice(true);
+            mScanFilters = new ArrayList<>();
+
+            ScanFilter scanFilter = new ScanFilter.Builder().setServiceUuid(
+                    new ParcelUuid(UUID.fromString(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID))).build();
+
+            mScanFilters.add(scanFilter);
+
+            startScan();
         }
     }
 
-    private void scanLeDevice(final boolean enable) {
-        if (enable) {
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mLeScanner.stopScan(mScanCallback);
-                }
-            }, SCAN_PERIOD);
-            mLeScanner.startScan(null, mScanSettings, mScanCallback);
-        } else {
-            if (mLeScanner != null)
+    private void startScan() {
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
                 mLeScanner.stopScan(mScanCallback);
-        }
+            }
+        }, SCAN_PERIOD);
+        mLeScanner.startScan(mScanFilters, mScanSettings, mScanCallback);
+    }
+
+    private void stopScan() {
+        if (mLeScanner != null)
+            mLeScanner.stopScan(mScanCallback);
     }
 
     private ScanCallback mScanCallback = new ScanCallback() {
@@ -394,8 +406,9 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         WandDevice device = mPairedDevicesMap.get(address);
         switch (data) {
             case WandAttributes.DETECT_NEW_CONNECTION:
-                if (mBluetoothLeService != null && device != null)
+                if (mBluetoothLeService != null && device != null) {
                     mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
+                }
                 break;
             case WandAttributes.AUTOMATIC_LOCK:
                 if (device != null) {

@@ -74,18 +74,11 @@ public class BluetoothLeService extends Service {
                 L.info("Connected to GATT server.");
                 // Attempts to discover services after successful connection.
                 if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
-                    boolean didStartServiceDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
-                    L.info("Attempting to start service discovery: " + didStartServiceDiscovery);
+                    boolean didStartServicesDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
+                    L.info("Attempting to start service discovery: " + didStartServicesDiscovery);
                 }
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                /*if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
-                    mGattHashMap.get(gatt.getDevice().getAddress()).close();
-                    mGattHashMap.remove(gatt.getDevice().getAddress());
-                }
-                if (mConnectedAddresses.contains(gatt.getDevice().getAddress())) {
-                    mConnectedAddresses.remove(gatt.getDevice().getAddress());
-                }*/
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 L.info("Disconnected from GATT server.");
@@ -121,12 +114,19 @@ public class BluetoothLeService extends Service {
             String address = gatt.getDevice().getAddress();
             String value = new String(characteristic.getValue());
 
-            if (value.equals(WandAttributes.ENTER_PASSWORD_ERROR)) {
-                if (mGattHashMap.containsKey(address)) {
-                    mGattHashMap.get(address).disconnect();
-                    mGattHashMap.get(address).close();
-                    mGattHashMap.remove(address);
-                }
+            switch (value) {
+                case WandAttributes.ENTER_PASSWORD_OK:
+                    if (mGattHashMap.containsKey(address)) {
+                        mConnectedAddresses.add(address);
+                    }
+                    break;
+                case WandAttributes.ENTER_PASSWORD_ERROR:
+                    if (mGattHashMap.containsKey(address)) {
+                        mGattHashMap.get(address).disconnect();
+                        mGattHashMap.get(address).close();
+                        mGattHashMap.remove(address);
+                    }
+                    break;
             }
 
             L.debug("onCharacteristicChanged: Address " + address + " - Data " + value);
@@ -243,7 +243,6 @@ public class BluetoothLeService extends Service {
         // We want to connect automatically to the device, so we are setting the autoConnect
         // parameter to true.
         mGattHashMap.put(address, device.connectGatt(this, true, mGattCallback));
-        mConnectedAddresses.add(address);
 
         L.debug("Trying to create a new connection.");
         mConnectionState = STATE_CONNECTING;
