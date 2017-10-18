@@ -251,6 +251,15 @@ public class BluetoothLeService extends Service {
         return true;
     }
 
+    public void disconnect(final String address) {
+        if (mConnectedAddresses.contains(address)) {
+            mConnectedAddresses.remove(address);
+        }
+        if (mGattHashMap.containsKey(address)) {
+            mGattHashMap.get(address).disconnect();
+        }
+    }
+
     public void closeConnection(String address) {
         if (mGattHashMap != null && mConnectedAddresses != null) {
             if (mConnectedAddresses.contains(address)) {

@@ -167,8 +167,13 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             case MY_CONFIGURE_DEVICE_REQUEST:
                 if (data != null && data.getExtras() != null) {
                     WandDevice device = data.getExtras().getParcelable(WandDevice.KEY);
-                    if (device != null)
+                    if (device != null) {
                         mAdapter.update(mItemCurrentPosition, device);
+                        if (mPairedDevicesMap.containsKey(device.address)) {
+                            mPairedDevicesMap.remove(device.address);
+                            mPairedDevicesMap.put(device.address, device);
+                        }
+                    }
                 }
                 break;
             default:

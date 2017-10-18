@@ -119,6 +119,14 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mBluetoothLeService.closeConnection(mWandDevice.address);
+        }
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mGattUpdateReceiver);
@@ -174,7 +182,9 @@ public class DeviceDetailActivity extends AppCompatActivity {
                     mWandDevice.owner = mNewOwner;
                     mNewOwner = null;
                 }
-                mBluetoothLeService.closeConnection(mWandDevice.address);
+                updateUI();
+                updateDB();
+                mBluetoothLeService.disconnect(mWandDevice.address);
                 mBluetoothLeService.connect(mWandDevice.address);
                 dismissProgress();
                 showProgress(getString(R.string.label_connecting));
@@ -182,7 +192,9 @@ public class DeviceDetailActivity extends AppCompatActivity {
             case WandAttributes.CHANGE_PASSWORD_OK:
                 mWandDevice.password = mNewPassword;
                 mNewPassword = null;
-                mBluetoothLeService.closeConnection(mWandDevice.address);
+                updateUI();
+                updateDB();
+                mBluetoothLeService.disconnect(mWandDevice.address);
                 mBluetoothLeService.connect(mWandDevice.address);
                 dismissProgress();
                 showProgress(getString(R.string.label_connecting));
@@ -193,8 +205,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 Toast.makeText(DeviceDetailActivity.this, getString(R.string.error_updating_password), Toast.LENGTH_SHORT).show();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
-                updateUI();
-                updateDB();
                 dismissProgress();
                 break;
             default:
