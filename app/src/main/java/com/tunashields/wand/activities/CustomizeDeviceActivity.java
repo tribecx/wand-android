@@ -80,6 +80,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 processData(data);
             }
             if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                L.debug("Yes im trying to reconnect");
                 mBluetoothLeService.connect(mDeviceAddress);
             }
         }
@@ -171,24 +172,26 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
                 Toast.makeText(getApplicationContext(), getString(R.string.error_connecting_device), Toast.LENGTH_LONG).show();
+                mBluetoothLeService.closeConnection(mDeviceAddress);
                 finish();
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
-                    configureNameAndOwner();
+                    mBluetoothLeService.disconnect(mDeviceAddress);
                 }
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 Toast.makeText(getApplicationContext(), getString(R.string.error_changing_password), Toast.LENGTH_LONG).show();
+                mBluetoothLeService.closeConnection(mDeviceAddress);
                 finish();
                 break;
             case WandAttributes.CHANGE_NAME_OK:
                 if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword, "M", 0, true))) {
+                            mBluetoothLeService.disconnect(mDeviceAddress);
                             dismissProgressDialog();
-                            mBluetoothLeService.closeConnection(mDeviceAddress);
                             showDoneDialog();
                         }
                     }

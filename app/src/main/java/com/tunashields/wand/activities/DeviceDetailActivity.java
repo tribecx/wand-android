@@ -43,7 +43,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
     private Switch mAutomaticModeView;
 
     private ProgressDialog mProgressDialog = null;
-    private boolean isPasswordEntered = false;
 
     private String mNewName = null;
     private String mNewOwner = null;
@@ -122,7 +121,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mBluetoothLeService.closeConnection(mWandDevice.address);
+            mBluetoothLeService.disconnect(mWandDevice.address);
         }
     }
 
@@ -187,7 +186,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 mBluetoothLeService.disconnect(mWandDevice.address);
                 mBluetoothLeService.connect(mWandDevice.address);
                 dismissProgress();
-                showProgress(getString(R.string.label_connecting));
+                showProgress(getString(R.string.label_connecting), true);
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 mWandDevice.password = mNewPassword;
@@ -197,7 +196,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 mBluetoothLeService.disconnect(mWandDevice.address);
                 mBluetoothLeService.connect(mWandDevice.address);
                 dismissProgress();
-                showProgress(getString(R.string.label_connecting));
+                showProgress(getString(R.string.label_connecting), true);
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 mNewPassword = null;
@@ -326,7 +325,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
         if (mWandDevice.mode != null && mWandDevice.mode.equals("A") && mWandDevice.relay == 0)
             return;
 
-        showProgress(getString(R.string.label_sending));
+        showProgress(getString(R.string.label_sending), false);
 
         if (mWandDevice.relay == 0) {
             mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setRelayFormat(1));
@@ -336,7 +335,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     public void onClickAutomaticMode(View view) {
-        showProgress(getString(R.string.label_sending));
+        showProgress(getString(R.string.label_sending), false);
 
         if (mWandDevice.mode != null && mWandDevice.mode.equals("A")) {
             mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeModeFormat("M"));
@@ -398,7 +397,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     private void sendNewName() {
-        showProgress(getString(R.string.label_sending));
+        showProgress(getString(R.string.label_sending), false);
         if (mWandDevice.owner != null)
             mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mNewName, mWandDevice.owner));
         else
@@ -458,7 +457,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     private void sendNewOwner() {
-        showProgress(getString(R.string.label_sending));
+        showProgress(getString(R.string.label_sending), false);
         mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mWandDevice.name, mNewOwner));
     }
 
@@ -526,14 +525,14 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     private void sendPassword() {
-        showProgress(getString(R.string.label_sending));
+        showProgress(getString(R.string.label_sending), false);
         mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangePasswordFormat(mNewPassword));
     }
 
-    private void showProgress(String message) {
+    private void showProgress(String message, boolean cancelable) {
         mProgressDialog = ProgressDialog.show(DeviceDetailActivity.this, null, message);
         mProgressDialog.setCanceledOnTouchOutside(false);
-        mProgressDialog.setCancelable(true);
+        mProgressDialog.setCancelable(cancelable);
         mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialogInterface) {
