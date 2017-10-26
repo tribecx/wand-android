@@ -2,7 +2,6 @@ package com.tunashields.wand.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
@@ -92,6 +91,13 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
+                WandDevice device = mPairedDevicesMap.get(address);
+                if (mBluetoothLeService != null && device != null) {
+                    mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
+                }
+            }
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
@@ -319,11 +325,10 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            L.info("callbackType: " + String.valueOf(callbackType));
-            L.info("ScanResult: " + result.toString());
-            BluetoothDevice btDevice = result.getDevice();
+            L.debug("callbackType: " + String.valueOf(callbackType));
+            L.debug("ScanResult: " + result.toString());
 
-            String address = btDevice.getAddress();
+            String address = result.getDevice().getAddress();
 
             if (address != null
                     && mPairedDevicesMap.containsKey(address)
@@ -331,13 +336,6 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     && mBluetoothLeService.mGattHashMap != null
                     && !mBluetoothLeService.mGattHashMap.containsKey(address)) {
                 mBluetoothLeService.connect(address);
-            }
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            for (ScanResult sr : results) {
-                L.info("ScanResult - Results: " + sr.toString());
             }
         }
 
@@ -410,11 +408,11 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     private void processData(String address, String data) {
         WandDevice device = mPairedDevicesMap.get(address);
         switch (data) {
-            case WandAttributes.DETECT_NEW_CONNECTION:
+            /*case WandAttributes.DETECT_NEW_CONNECTION:
                 if (mBluetoothLeService != null && device != null) {
                     mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
                 }
-                break;
+                break;*/
             case WandAttributes.AUTOMATIC_LOCK:
                 if (device != null) {
                     device.relay = 1;

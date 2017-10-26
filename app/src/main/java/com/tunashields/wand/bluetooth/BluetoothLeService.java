@@ -89,23 +89,39 @@ public class BluetoothLeService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+
+                String address = gatt.getDevice().getAddress();
+
+                /**
+                 * Looking for Wand BLE Service.
+                 * */
+                BluetoothGattService mCustomService = mGattHashMap.get(address).getService(UUID.fromString(WandAttributes.WAND_SERVICE));
+                if (mCustomService != null) {
+                    /**
+                     * Subscribing Wand BLE Characteristic to notifications.
+                     * */
+                    BluetoothGattCharacteristic mCustomCharacteristic = mCustomService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
+                    if (mCustomCharacteristic != null) {
+                        mCustomCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+                        boolean notificationsEnabled = mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, true);
+                        L.debug("setCharacteristicNotification() - uuid: " + mCustomCharacteristic.getUuid() + " enable: " + notificationsEnabled);
+                        BluetoothGattDescriptor mDescriptor = mCustomCharacteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
+                        mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                        boolean writtenDescriptor = mGattHashMap.get(address).writeDescriptor(mDescriptor);
+                        L.debug("writeDescriptor() - uuid: " + mDescriptor.getUuid() + " written: " + writtenDescriptor);
+
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED, address);
+
             } else {
                 L.warning("onServicesDiscovered received: " + status);
-            }
-
-            if (mBluetoothAdapter == null || mGattHashMap.get(gatt.getDevice().getAddress()) == null) {
-                L.warning("BluetoothAdapter not initialized");
-                return;
-            }
-
-            BluetoothGattService mCustomService = gatt.getService(UUID.fromString(WandAttributes.WAND_SERVICE));
-            if (mCustomService != null) {
-                BluetoothGattCharacteristic characteristic = mCustomService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
-                mGattHashMap.get(gatt.getDevice().getAddress()).setCharacteristicNotification(characteristic, true);
-                BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                mGattHashMap.get(gatt.getDevice().getAddress()).writeDescriptor(descriptor);
             }
         }
 
@@ -131,7 +147,7 @@ public class BluetoothLeService extends Service {
                     break;
             }
 
-            L.debug("onCharacteristicChanged: Address " + address + " - Data " + value);
+            L.debug("onCharacteristicChanged() - Address: " + address + " Data: " + value);
             broadcastUpdate(ACTION_DATA_AVAILABLE, address, characteristic);
         }
     };
@@ -244,7 +260,8 @@ public class BluetoothLeService extends Service {
 
         // We want to connect automatically to the device, so we are setting the autoConnect
         // parameter to true.
-        mGattHashMap.put(address, device.connectGatt(this, true, mGattCallback));
+        mGattHashMap.put(address, device.connectGatt(this, false, mGattCallback));
+        device.createBond();
 
         L.debug("Trying to create a new connection.");
         mConnectionState = STATE_CONNECTING;

@@ -74,9 +74,11 @@ public class PairDeviceActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                sendPassword();
+            }
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                L.debug(data);
                 processData(data);
             }
             if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
@@ -177,9 +179,9 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private void processData(String data) {
         switch (data) {
-            case WandAttributes.DETECT_NEW_CONNECTION:
+            /*case WandAttributes.DETECT_NEW_CONNECTION:
                 sendPassword();
-                break;
+                break;*/
             case WandAttributes.ENTER_PASSWORD_OK:
                 mWandDevice = new WandDevice(mDeviceAddress, mDeviceName, mPassword, false);
                 getOwner();
@@ -210,7 +212,6 @@ public class PairDeviceActivity extends AppCompatActivity {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(mWandDevice)) {
                             dismissProgressDialog();
-                            mBluetoothLeService.closeConnection(mDeviceAddress);
                             showDoneDialog();
                         }
                     }
