@@ -72,10 +72,13 @@ public class BluetoothLeService extends Service {
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
                 L.info("Connected to GATT server.");
+
                 // Attempts to discover services after successful connection.
                 if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
-                    boolean didStartServicesDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
-                    L.info("Attempting to start service discovery: " + didStartServicesDiscovery);
+                    if (mGattHashMap.get(gatt.getDevice().getAddress()).getServices() != null && mGattHashMap.get(gatt.getDevice().getAddress()).getServices().size() <= 0) {
+                        boolean didStartServicesDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
+                        L.info("Attempting to start service discovery: " + didStartServicesDiscovery);
+                    }
                 }
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -244,6 +247,7 @@ public class BluetoothLeService extends Service {
             if (mGattHashMap.get(address) != null) {
                 L.debug("Trying to use an existing mBluetoothGatt for connection.");
                 if (mGattHashMap.get(address).connect()) {
+                    L.debug("re-connect :true");
                     mConnectionState = STATE_CONNECTING;
                     return true;
                 } else {
@@ -283,7 +287,6 @@ public class BluetoothLeService extends Service {
                 mConnectedAddresses.remove(address);
             }
             if (mGattHashMap.containsKey(address)) {
-                mGattHashMap.get(address).disconnect();
                 mGattHashMap.get(address).close();
                 mGattHashMap.remove(address);
             }
@@ -297,7 +300,6 @@ public class BluetoothLeService extends Service {
                     mConnectedAddresses.remove(address);
                 }
                 if (mGattHashMap.containsKey(address)) {
-                    mGattHashMap.get(address).disconnect();
                     mGattHashMap.get(address).close();
                     mGattHashMap.remove(address);
                 }
@@ -326,6 +328,7 @@ public class BluetoothLeService extends Service {
         }
         /* add value to write in characteristic */
         mCharacteristic.setValue(value);
+        mCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
 
         if (!mGattHashMap.get(address).writeCharacteristic(mCharacteristic)) {
             L.warning("Failed to write characteristic");
