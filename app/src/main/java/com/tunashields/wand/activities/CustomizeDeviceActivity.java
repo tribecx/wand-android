@@ -39,6 +39,9 @@ public class CustomizeDeviceActivity extends AppCompatActivity
 
     private BluetoothLeService mBluetoothLeService;
 
+    private Handler mCantConnectHandler;
+    private Runnable mCantConnectRunnable;
+
     private String mCustomName = null;
     private String mCustomOwner = null;
     private String mCustomPassword = null;
@@ -85,6 +88,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
              *  */
             if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 if (mStatus == null) {
+                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
                     mStatus = WandAttributes.DETECT_NEW_CONNECTION;
                     mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(WandAttributes.DEFAULT_PASSWORD));
                 }
@@ -122,6 +126,18 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         showProgressDialog(getString(R.string.prompt_linking_device));
+
+        mCantConnectRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), getString(R.string.error_connecting_device), Toast.LENGTH_LONG).show();
+                if (mBluetoothLeService != null)
+                    mBluetoothLeService.closeConnection(mDeviceAddress);
+                finish();
+            }
+        };
+        mCantConnectHandler = new Handler();
+        mCantConnectHandler.postDelayed(mCantConnectRunnable, 1000);
     }
 
     @Override
