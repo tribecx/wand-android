@@ -13,6 +13,7 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 
 import com.tunashields.wand.utils.L;
@@ -90,6 +91,7 @@ public class BluetoothLeService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                L.debug("Discover services status: " + status);
 
                 String address = gatt.getDevice().getAddress();
 
@@ -253,7 +255,12 @@ public class BluetoothLeService extends Service {
 
         // We want to connect automatically to the device, so we are setting the autoConnect
         // parameter to true.
-        mGattHashMap.put(address, device.connectGatt(this, false, mGattCallback));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mGattHashMap.put(address, device.connectGatt(this, true, mGattCallback, BluetoothDevice.TRANSPORT_LE));
+        } else {
+            mGattHashMap.put(address, device.connectGatt(this, true, mGattCallback));
+        }
+        device.createBond();
 
         L.debug("Trying to create a new connection.");
         mConnectionState = STATE_CONNECTING;

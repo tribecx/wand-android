@@ -87,14 +87,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
              *  status response
              *  */
             if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                if (mStatus == null) {
-                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
-                    mStatus = WandAttributes.DETECT_NEW_CONNECTION;
-                    mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(WandAttributes.DEFAULT_PASSWORD));
-                }
-                if (mStatus != null && mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
-                    mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mCustomPassword));
-                }
+
             }
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
@@ -206,6 +199,16 @@ public class CustomizeDeviceActivity extends AppCompatActivity
 
     private void processData(String data) {
         switch (data) {
+            case WandAttributes.DETECT_NEW_CONNECTION:
+                if (mStatus == null) {
+                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                    mStatus = WandAttributes.DETECT_NEW_CONNECTION;
+                    mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(WandAttributes.DEFAULT_PASSWORD));
+                }
+                if (mStatus != null && mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
+                    mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mCustomPassword));
+                }
+                break;
             case WandAttributes.ENTER_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.DETECT_NEW_CONNECTION)) {
                     mStatus = WandAttributes.ENTER_PASSWORD_OK;
