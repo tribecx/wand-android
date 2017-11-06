@@ -82,6 +82,7 @@ public class DeviceScanActivity extends AppCompatActivity {
         mAdapter.setOnItemClickListener(new WandDevicesAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position, Object object) {
+                mLeScanner.stopScan(mScanCallback);
                 BluetoothDevice bluetoothDevice = (BluetoothDevice) object;
                 Intent intent = new Intent(DeviceScanActivity.this, PairDeviceActivity.class);
                 intent.putExtra(PairDeviceActivity.EXTRA_DEVICE_NAME, bluetoothDevice.getName());

@@ -335,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     && mBluetoothLeService != null
                     && mBluetoothLeService.mGattHashMap != null
                     && !mBluetoothLeService.mGattHashMap.containsKey(address)) {
+                stopScan();
                 mBluetoothLeService.connect(address);
             }
         }
@@ -370,6 +371,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     public void startAddDeviceActivity(View view) {
+        mLeScanner.stopScan(mScanCallback);
         startActivity(new Intent(MainActivity.this, DeviceScanActivity.class));
     }
 
@@ -445,6 +447,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                         if (Database.mWandDeviceDao.updateDevice(device)) {
                             mAdapter.update(device);
                             L.info("Device " + device.address + " of " + device.owner + " updated.");
+                            startScan();
                         }
                     }
                 }

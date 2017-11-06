@@ -137,7 +137,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             }
         };
         mCantConnectHandler = new Handler();
-        mCantConnectHandler.postDelayed(mCantConnectRunnable, 1000);
+        mCantConnectHandler.postDelayed(mCantConnectRunnable, 10000);
     }
 
     @Override
@@ -224,7 +224,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
                     mBluetoothLeService.closeConnection(mDeviceAddress);
-                    /* Trying to reconnect after 10 seconds */
+                    /* Trying to reconnect after 6 seconds */
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {

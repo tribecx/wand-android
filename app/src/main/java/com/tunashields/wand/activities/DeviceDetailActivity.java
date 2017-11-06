@@ -12,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -83,12 +84,14 @@ public class DeviceDetailActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                if (mBluetoothLeService != null && mWandDevice != null)
+                    mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setEnterPasswordFormat(mWandDevice.password));
+            }
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 L.debug(data);
                 processData(data);
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mBluetoothLeService.connect(mWandDevice.address);
             }
         }
     };
@@ -140,10 +143,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private void processData(String data) {
         switch (data) {
-            case WandAttributes.DETECT_NEW_CONNECTION:
-                if (mBluetoothLeService != null && mWandDevice != null)
-                    mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setEnterPasswordFormat(mWandDevice.password));
-                break;
             case WandAttributes.ENABLE_RELAY_OK:
                 mWandDevice.relay = 1;
                 updateUI();
@@ -172,6 +171,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 updateUI();
                 updateDB();
                 dismissProgress();
+                getState();
                 break;
             case WandAttributes.CHANGE_NAME_OK:
                 if (mNewName != null) {
@@ -184,7 +184,13 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 updateUI();
                 updateDB();
                 mBluetoothLeService.disconnect(mWandDevice.address);
-                mBluetoothLeService.connect(mWandDevice.address);
+                mBluetoothLeService.closeConnection(mWandDevice.address);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBluetoothLeService.connect(mWandDevice.address);
+                    }
+                }, 6000);
                 dismissProgress();
                 showProgress(getString(R.string.label_connecting), true);
                 break;
@@ -194,7 +200,13 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 updateUI();
                 updateDB();
                 mBluetoothLeService.disconnect(mWandDevice.address);
-                mBluetoothLeService.connect(mWandDevice.address);
+                mBluetoothLeService.closeConnection(mWandDevice.address);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBluetoothLeService.connect(mWandDevice.address);
+                    }
+                }, 6000);
                 dismissProgress();
                 showProgress(getString(R.string.label_connecting), true);
                 break;

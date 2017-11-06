@@ -75,10 +75,8 @@ public class BluetoothLeService extends Service {
 
                 // Attempts to discover services after successful connection.
                 if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
-                    if (mGattHashMap.get(gatt.getDevice().getAddress()).getServices() != null && mGattHashMap.get(gatt.getDevice().getAddress()).getServices().size() <= 0) {
-                        boolean didStartServicesDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
-                        L.info("Attempting to start service discovery: " + didStartServicesDiscovery);
-                    }
+                    mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
+                    L.info("Attempting to start service discovery: " + mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices());
                 }
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -105,24 +103,15 @@ public class BluetoothLeService extends Service {
                      * */
                     BluetoothGattCharacteristic mCustomCharacteristic = mCustomService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
                     if (mCustomCharacteristic != null) {
-                        mCustomCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-                        boolean notificationsEnabled = mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, true);
-                        L.debug("setCharacteristicNotification() - uuid: " + mCustomCharacteristic.getUuid() + " enable: " + notificationsEnabled);
+                        //mCustomCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+                        mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, true);
                         BluetoothGattDescriptor mDescriptor = mCustomCharacteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
                         mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                        boolean writtenDescriptor = mGattHashMap.get(address).writeDescriptor(mDescriptor);
-                        L.debug("writeDescriptor() - uuid: " + mDescriptor.getUuid() + " written: " + writtenDescriptor);
-
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        mGattHashMap.get(address).writeDescriptor(mDescriptor);
                     }
                 }
 
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED, address);
-
             } else {
                 L.warning("onServicesDiscovered received: " + status);
             }
@@ -265,7 +254,6 @@ public class BluetoothLeService extends Service {
         // We want to connect automatically to the device, so we are setting the autoConnect
         // parameter to true.
         mGattHashMap.put(address, device.connectGatt(this, false, mGattCallback));
-        device.createBond();
 
         L.debug("Trying to create a new connection.");
         mConnectionState = STATE_CONNECTING;
