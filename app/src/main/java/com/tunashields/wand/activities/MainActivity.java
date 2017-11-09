@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -91,13 +92,15 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            /*if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
-                WandDevice device = mPairedDevicesMap.get(address);
-                if (mBluetoothLeService != null && device != null) {
-                    mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                    String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
+                    WandDevice device = mPairedDevicesMap.get(address);
+                    if (mBluetoothLeService != null && device != null) {
+                        mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
+                    }
                 }
-            }*/
+            }
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
@@ -108,7 +111,9 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
                 mAdapter.notifyDeviceDisconnected(address);
+                mBluetoothLeService.disconnect(address);
                 mBluetoothLeService.closeConnection(address);
+                mBluetoothLeService.connect(address);
             }
         }
     };
@@ -498,6 +503,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (mPairedDevicesMap.containsKey(wandDevice.address))
                     mPairedDevicesMap.remove(wandDevice.address);
+                mBluetoothLeService.disconnect(wandDevice.address);
                 mBluetoothLeService.closeConnection(wandDevice.address);
                 mAdapter.remove(position);
                 Database.mWandDeviceDao.delete(wandDevice);

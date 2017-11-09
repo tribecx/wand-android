@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -86,13 +87,26 @@ public class CustomizeDeviceActivity extends AppCompatActivity
              *  In this case i sent the default or new password according to the
              *  status response
              *  */
-            if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                    if (mStatus == null) {
+                        mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                        mStatus = WandAttributes.DETECT_NEW_CONNECTION;
+                        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(WandAttributes.DEFAULT_PASSWORD));
+                    }
+                    if (mStatus != null && mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
+                        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mCustomPassword));
+                    }
+                }
             }
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 L.debug(data);
                 processData(data);
+            }
+            if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                L.debug("CustomizeDeviceActivity: Device disconnected");
+                mBluetoothLeService.connect(mDeviceAddress);
             }
         }
     };
@@ -124,8 +138,10 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             @Override
             public void run() {
                 Toast.makeText(getApplicationContext(), getString(R.string.error_connecting_device), Toast.LENGTH_LONG).show();
-                if (mBluetoothLeService != null)
+                if (mBluetoothLeService != null) {
+                    mBluetoothLeService.disconnect(mDeviceAddress);
                     mBluetoothLeService.closeConnection(mDeviceAddress);
+                }
                 finish();
             }
         };
@@ -220,12 +236,14 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
                 Toast.makeText(getApplicationContext(), getString(R.string.error_connecting_device), Toast.LENGTH_LONG).show();
+                mBluetoothLeService.disconnect(mDeviceAddress);
                 mBluetoothLeService.closeConnection(mDeviceAddress);
                 finish();
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
+                    mBluetoothLeService.disconnect(mDeviceAddress);
                     mBluetoothLeService.closeConnection(mDeviceAddress);
                     /* Trying to reconnect after 6 seconds */
                     new Handler().postDelayed(new Runnable() {
@@ -238,6 +256,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 Toast.makeText(getApplicationContext(), getString(R.string.error_changing_password), Toast.LENGTH_LONG).show();
+                mBluetoothLeService.disconnect(mDeviceAddress);
                 mBluetoothLeService.closeConnection(mDeviceAddress);
                 finish();
                 break;
@@ -245,6 +264,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword, "M", 0, true))) {
+                            mBluetoothLeService.disconnect(mDeviceAddress);
                             mBluetoothLeService.closeConnection(mDeviceAddress);
                             dismissProgressDialog();
                             showDoneDialog();
@@ -298,9 +318,10 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         mProgressDialogFragment.setOnCancelClickListener(new ProgressDialogFragment.OnCancelClickListener() {
             @Override
             public void onCancel() {
-                if (mBluetoothLeService != null)
+                if (mBluetoothLeService != null) {
+                    mBluetoothLeService.disconnect(mDeviceAddress);
                     mBluetoothLeService.closeConnection(mDeviceAddress);
-
+                }
                 finish();
             }
         });

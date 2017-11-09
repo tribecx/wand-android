@@ -18,6 +18,7 @@ import android.os.IBinder;
 
 import com.tunashields.wand.utils.L;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -107,6 +108,13 @@ public class BluetoothLeService extends Service {
                     if (mCustomCharacteristic != null) {
                         //mCustomCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                         mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, true);
+
+                        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
+                            // Request the MTU size to device.
+                            // See also https://stackoverflow.com/questions/24135682/android-sending-data-20-bytes-by-ble
+                            boolean requestMtu = mGattHashMap.get(address).requestMtu(512);
+                        }
+
                         BluetoothGattDescriptor mDescriptor = mCustomCharacteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
                         mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                         mGattHashMap.get(address).writeDescriptor(mDescriptor);
@@ -228,43 +236,40 @@ public class BluetoothLeService extends Service {
      * callback.
      */
     public boolean connect(final String address) {
-        if (mBluetoothAdapter == null || address == null) {
-            L.warning("BluetoothAdapter not initialized or unspecified address.");
-            return false;
-        }
-
-        // Previously connected device. Try to reconnect.
-        if (mGattHashMap.containsKey(address)) {
+        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
             if (mGattHashMap.get(address) != null) {
-                L.debug("Trying to use an existing mBluetoothGatt for connection.");
-                if (mGattHashMap.get(address).connect()) {
-                    L.debug("re-connect :true");
-                    mConnectionState = STATE_CONNECTING;
-                    return true;
-                } else {
-                    return false;
+                mGattHashMap.get(address).disconnect();
+            }
+
+            final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+
+            // We want to connect automatically to the device, so we are setting the autoConnect
+            // parameter to true.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mGattHashMap.put(address, device.connectGatt(this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE));
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // From Android LOLLIPOP (21) the transport types exists, but them are hide for use,
+                // so is needed to use reflection to get the value
+                try {
+                    Method connectGattMethod = device.getClass().getDeclaredMethod("connectGatt", Context.class, boolean.class, BluetoothGattCallback.class, int.class);
+                    connectGattMethod.setAccessible(true);
+                    BluetoothGatt bluetoothGatt = (BluetoothGatt) connectGattMethod.invoke(device, this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE);
+                    mGattHashMap.put(address, bluetoothGatt);
+                } catch (Exception ex) {
+                    L.error("Error on call BluetoothDevice.connectGatt with reflection." + ex);
                 }
             }
-        }
 
-        final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-        if (device == null) {
-            L.warning("Device not found.  Unable to connect.");
-            return false;
-        }
+            // If any try is fail, then call the connectGatt without transport
+            if (mGattHashMap.get(address) == null) {
+                mGattHashMap.put(address, device.connectGatt(this, false, mGattCallback));
+            }
 
-        // We want to connect automatically to the device, so we are setting the autoConnect
-        // parameter to true.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mGattHashMap.put(address, device.connectGatt(this, true, mGattCallback, BluetoothDevice.TRANSPORT_LE));
-        } else {
-            mGattHashMap.put(address, device.connectGatt(this, true, mGattCallback));
+            L.debug("Trying to create a new connection.");
+            mConnectionState = STATE_CONNECTING;
+            return true;
         }
-        device.createBond();
-
-        L.debug("Trying to create a new connection.");
-        mConnectionState = STATE_CONNECTING;
-        return true;
+        return false;
     }
 
     public void disconnect(final String address) {
@@ -295,6 +300,7 @@ public class BluetoothLeService extends Service {
                     mConnectedAddresses.remove(address);
                 }
                 if (mGattHashMap.containsKey(address)) {
+                    mGattHashMap.get(address).disconnect();
                     mGattHashMap.get(address).close();
                     mGattHashMap.remove(address);
                 }
@@ -327,7 +333,6 @@ public class BluetoothLeService extends Service {
 
         if (!mGattHashMap.get(address).writeCharacteristic(mCharacteristic)) {
             L.warning("Failed to write characteristic");
-            broadcastUpdate(ERROR_CONFIGURATION);
             return false;
         } else {
             return true;
