@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -87,18 +86,6 @@ public class CustomizeDeviceActivity extends AppCompatActivity
              *  In this case i sent the default or new password according to the
              *  status response
              *  */
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                    if (mStatus == null) {
-                        mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
-                        mStatus = WandAttributes.DETECT_NEW_CONNECTION;
-                        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(WandAttributes.DEFAULT_PASSWORD));
-                    }
-                    if (mStatus != null && mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
-                        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mCustomPassword));
-                    }
-                }
-            }
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 L.debug(data);
