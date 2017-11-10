@@ -108,13 +108,6 @@ public class BluetoothLeService extends Service {
                     if (mCustomCharacteristic != null) {
                         //mCustomCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                         mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, true);
-
-                        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
-                            // Request the MTU size to device.
-                            // See also https://stackoverflow.com/questions/24135682/android-sending-data-20-bytes-by-ble
-                            boolean requestMtu = mGattHashMap.get(address).requestMtu(512);
-                        }
-
                         BluetoothGattDescriptor mDescriptor = mCustomCharacteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
                         mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                         mGattHashMap.get(address).writeDescriptor(mDescriptor);
