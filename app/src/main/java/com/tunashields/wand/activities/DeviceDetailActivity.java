@@ -139,6 +139,10 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
     private void processData(String data) {
         switch (data) {
+            case WandAttributes.DETECT_NEW_CONNECTION:
+                if (mBluetoothLeService != null && mWandDevice != null)
+                    mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setEnterPasswordFormat(mWandDevice.password));
+                break;
             case WandAttributes.ENABLE_RELAY_OK:
                 mWandDevice.relay = 1;
                 updateUI();
