@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -32,6 +33,7 @@ import com.tunashields.wand.utils.L;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class DeviceScanActivity extends AppCompatActivity {
 
@@ -105,6 +107,12 @@ public class DeviceScanActivity extends AppCompatActivity {
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .build();
             mScanFilters = new ArrayList<>();
+
+            ScanFilter scanFilter = new ScanFilter.Builder().setServiceUuid(
+                    new ParcelUuid(UUID.fromString(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID))).build();
+
+            mScanFilters.add(scanFilter);
+
             scanLeDevice(true);
         }
     }
