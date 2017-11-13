@@ -1,6 +1,7 @@
 package com.tunashields.wand.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -303,13 +304,15 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     private void startScan() {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mLeScanner.stopScan(mScanCallback);
-            }
-        }, SCAN_PERIOD);
-        mLeScanner.startScan(mScanFilters, mScanSettings, mScanCallback);
+        if (Database.mWandDeviceDao.getAllDevices().size() > 0) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mLeScanner.stopScan(mScanCallback);
+                }
+            }, SCAN_PERIOD);
+            mLeScanner.startScan(mScanFilters, mScanSettings, mScanCallback);
+        }
     }
 
     private void stopScan() {
@@ -493,10 +496,15 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (mPairedDevicesMap.containsKey(wandDevice.address))
                     mPairedDevicesMap.remove(wandDevice.address);
+
+                mAdapter.remove(position);
+                if (Database.mWandDeviceDao.delete(wandDevice)) {
+                    L.debug("Device: " + wandDevice.address + " deleted");
+                }
+
                 mBluetoothLeService.disconnect(wandDevice.address);
                 mBluetoothLeService.closeConnection(wandDevice.address);
-                mAdapter.remove(position);
-                Database.mWandDeviceDao.delete(wandDevice);
+
                 setVisibleLayout();
             }
         });
