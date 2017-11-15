@@ -144,7 +144,6 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mBluetoothLeService.closeGattConnections();
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
     }
@@ -494,18 +493,18 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         mDialogBuilder.setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if (mPairedDevicesMap.containsKey(wandDevice.address))
-                    mPairedDevicesMap.remove(wandDevice.address);
-
-                mAdapter.remove(position);
                 if (Database.mWandDeviceDao.delete(wandDevice)) {
                     L.debug("Device: " + wandDevice.address + " deleted");
+
+                    if (mPairedDevicesMap.containsKey(wandDevice.address))
+                        mPairedDevicesMap.remove(wandDevice.address);
+
+                    mAdapter.remove(position);
+
+                    mBluetoothLeService.disconnect(wandDevice.address);
+
+                    setVisibleLayout();
                 }
-
-                mBluetoothLeService.disconnect(wandDevice.address);
-                mBluetoothLeService.closeConnection(wandDevice.address);
-
-                setVisibleLayout();
             }
         });
         mDialogBuilder.show();
