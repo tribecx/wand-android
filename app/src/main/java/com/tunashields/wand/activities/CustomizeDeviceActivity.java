@@ -95,6 +95,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 L.debug("CustomizeDeviceActivity: Device disconnected");
                 mBluetoothLeService.connect(mDeviceAddress);
             }
+            // TODO: 11/15/17 Restore Android 5.0 compatibility
         }
     };
 

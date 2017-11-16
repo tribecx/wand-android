@@ -239,7 +239,9 @@ public class BluetoothLeService extends Service {
             // We want to connect automatically to the device, so we are setting the autoConnect
             // parameter to true.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mGattHashMap.put(address, device.connectGatt(this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE));
+                BluetoothGatt bluetoothGatt = device.connectGatt(this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE);
+                refreshDeviceCache(bluetoothGatt);
+                mGattHashMap.put(address, bluetoothGatt);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 // From Android LOLLIPOP (21) the transport types exists, but them are hide for use,
                 // so is needed to use reflection to get the value
@@ -263,6 +265,26 @@ public class BluetoothLeService extends Service {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Call to private Android method 'refresh'
+     * This method does actually clear the cache from a bluetooth device.
+     * But the problem is that we don't have access to it. But in java we have reflection, so we can access this method.
+     * http://stackoverflow.com/questions/22596951/how-to-programmatically-force-bluetooth-low-energy-service-discovery-on-android
+     */
+    public void refreshDeviceCache(BluetoothGatt gatt) {
+        try {
+            Method localMethod = gatt.getClass().getMethod("refresh");
+            if (localMethod != null) {
+                boolean result = (Boolean) localMethod.invoke(gatt);
+                if (result) {
+                    L.debug("Bluetooth refresh cache");
+                }
+            }
+        } catch (Exception localException) {
+            L.error("An exception occurred while refreshing device");
+        }
     }
 
     public void disconnect(final String address) {
