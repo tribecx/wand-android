@@ -163,16 +163,21 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            L.debug("callbackType: " + String.valueOf(callbackType));
-            L.debug("ScanResult: " + result.toString());
-            BluetoothDevice btDevice = result.getDevice();
+        public void onScanResult(final int callbackType, final ScanResult result) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    L.debug("callbackType: " + String.valueOf(callbackType));
+                    L.debug("ScanResult: " + result.toString());
+                    BluetoothDevice btDevice = result.getDevice();
 
-            if (result.toString().contains(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID)
-                    && !mAdapter.contains(btDevice)
-                    && !mPairedDevicesAddresses.contains(btDevice.getAddress())) {
-                mAdapter.add(btDevice);
-            }
+                    if (result.toString().contains(WandAttributes.WAND_ADVERTISEMENT_DATA_UUID)
+                            && !mAdapter.contains(btDevice)
+                            && !mPairedDevicesAddresses.contains(btDevice.getAddress())) {
+                        mAdapter.add(btDevice);
+                    }
+                }
+            });
         }
 
         @Override
