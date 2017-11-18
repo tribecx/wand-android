@@ -216,6 +216,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             case WandAttributes.ENTER_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.DETECT_NEW_CONNECTION)) {
                     mStatus = WandAttributes.ENTER_PASSWORD_OK;
+                    L.debug("Enter password OK");
                     dismissProgressDialog();
                     showAssignNameFragment();
                 } else if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
@@ -231,6 +232,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             case WandAttributes.CHANGE_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
+                    L.debug("Password changed correctly");
                     mBluetoothLeService.disconnect(mDeviceAddress);
                     mBluetoothLeService.closeConnection(mDeviceAddress);
                     /* Trying to reconnect after 6 seconds */
@@ -252,6 +254,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword, "M", 0, true))) {
+                            L.debug("Device " + mCustomName + " of " + mCustomOwner + " added");
                             mBluetoothLeService.disconnect(mDeviceAddress);
                             mBluetoothLeService.closeConnection(mDeviceAddress);
                             dismissProgressDialog();
@@ -284,10 +287,12 @@ public class CustomizeDeviceActivity extends AppCompatActivity
     }
 
     private void configureNameAndOwner() {
+        L.debug("Configuring name and owner");
         mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setChangeNameAndOwnerFormat(mCustomName, mCustomOwner));
     }
 
     private void configurePassword() {
+        L.debug("Configuring password");
         mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setChangePasswordFormat(mCustomPassword));
     }
 

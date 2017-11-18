@@ -190,24 +190,30 @@ public class PairDeviceActivity extends AppCompatActivity {
             default:
                 if (data.contains("#D:")) {
                     mWandDevice.owner = data.substring(3, data.length() - 1);
+                    L.debug("Updated owner " + mWandDevice.owner);
                     getState();
                 }
 
                 if (data.contains("#E:") && data.contains("OK")) {
                     if (data.contains(WandAttributes.MODE_MANUAL)) {
                         mWandDevice.mode = "M";
+                        L.debug("Updated mode status: " + WandAttributes.MODE_MANUAL);
                     } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
                         mWandDevice.mode = "A";
+                        L.debug("Updated mode status: " + WandAttributes.MODE_AUTOMATIC);
                     }
 
                     if (data.contains(WandAttributes.RELAY_DISABLED)) {
                         mWandDevice.relay = 0;
+                        L.debug("Updated relay status: " + WandAttributes.RELAY_DISABLED);
                     } else if (data.contains(WandAttributes.RELAY_ENABLED)) {
                         mWandDevice.relay = 1;
+                        L.debug("Updated relay status: " + WandAttributes.RELAY_ENABLED);
                     }
 
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(mWandDevice)) {
+                            L.debug("Device " + mWandDevice.name + " of " + mWandDevice.owner + " added");
                             dismissProgressDialog();
                             showDoneDialog();
                         }
@@ -253,6 +259,7 @@ public class PairDeviceActivity extends AppCompatActivity {
     }
 
     private void sendPassword() {
+        L.debug("Sending password " + WandUtils.setEnterPasswordFormat(mPassword));
         mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mPassword));
     }
 

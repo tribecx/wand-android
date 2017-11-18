@@ -73,18 +73,18 @@ public class BluetoothLeService extends Service {
                 intentAction = ACTION_GATT_CONNECTED;
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
-                L.info("Connected to GATT server.");
+                L.info("Connected to device.");
 
                 // Attempts to discover services after successful connection.
                 if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
-                    mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
-                    L.info("Attempting to start service discovery: " + mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices());
+                    boolean didstartServicesDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
+                    L.info("Attempting to start service discovery: " + didstartServicesDiscovery);
                 }
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
-                L.info("Disconnected from GATT server.");
+                L.info("Disconnected from device.");
                 broadcastUpdate(intentAction, gatt.getDevice().getAddress());
             }
         }
@@ -92,7 +92,7 @@ public class BluetoothLeService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                L.debug("Discover services status: " + status);
+                L.debug("Discover services status: SUCCESS");
 
                 String address = gatt.getDevice().getAddress();
 
@@ -101,12 +101,13 @@ public class BluetoothLeService extends Service {
                  * */
                 BluetoothGattService mCustomService = mGattHashMap.get(address).getService(UUID.fromString(WandAttributes.WAND_SERVICE));
                 if (mCustomService != null) {
+                    L.debug("Wand service founded: " + mCustomService.getUuid().toString());
                     /**
                      * Subscribing Wand BLE Characteristic to notifications.
                      * */
                     BluetoothGattCharacteristic mCustomCharacteristic = mCustomService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
                     if (mCustomCharacteristic != null) {
-                        //mCustomCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+                        L.debug("Wand characteristic founded: " + mCustomCharacteristic.getUuid().toString());
                         mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, true);
                         BluetoothGattDescriptor mDescriptor = mCustomCharacteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
                         mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
@@ -116,7 +117,7 @@ public class BluetoothLeService extends Service {
 
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED, address);
             } else {
-                L.warning("onServicesDiscovered received: " + status);
+                L.warning("onServicesDiscovered received: error - status: " + status);
             }
         }
 
@@ -216,6 +217,7 @@ public class BluetoothLeService extends Service {
         if (mConnectedAddresses == null)
             mConnectedAddresses = new ArrayList<>();
 
+        L.debug("Bluetooth service initialized");
         return true;
     }
 
@@ -306,6 +308,7 @@ public class BluetoothLeService extends Service {
                 mGattHashMap.remove(address);
             }
         }
+        L.debug("Closed connection: " + address);
     }
 
     public void closeGattConnections() {
@@ -350,6 +353,7 @@ public class BluetoothLeService extends Service {
             L.warning("Failed to write characteristic");
             return false;
         } else {
+            L.debug("Correctly written value: " + value);
             return true;
         }
     }

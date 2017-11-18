@@ -387,13 +387,17 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     if (data.contains("#E") && data.contains("OK@")) {
                         if (data.contains(WandAttributes.MODE_MANUAL)) {
                             device.mode = "M";
+                            L.debug("Updated mode status: " + WandAttributes.MODE_MANUAL);
                         } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
                             device.mode = "A";
+                            L.debug("Updated mode status: " + WandAttributes.MODE_AUTOMATIC);
                         }
                         if (data.contains(WandAttributes.RELAY_ENABLED)) {
                             device.relay = 1;
+                            L.debug("Updated relay status: " + WandAttributes.RELAY_ENABLED);
                         } else if (data.contains(WandAttributes.RELAY_DISABLED)) {
                             device.relay = 0;
+                            L.debug("Updated relay status: " + WandAttributes.RELAY_DISABLED);
                         }
                         if (Database.mWandDeviceDao.updateDevice(device)) {
                             mAdapter.update(device);

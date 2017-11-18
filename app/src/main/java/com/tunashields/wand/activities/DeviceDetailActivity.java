@@ -86,7 +86,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                L.debug(data);
                 processData(data);
             }
         }
@@ -176,9 +175,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
             case WandAttributes.CHANGE_NAME_OK:
                 if (mNewName != null) {
                     mWandDevice.name = mNewName;
+                    L.debug("Changed name to: " + mNewName);
                     mNewName = null;
                 } else if (mNewOwner != null) {
                     mWandDevice.owner = mNewOwner;
+                    L.debug("Changed owner to: " + mNewOwner);
                     mNewOwner = null;
                 }
                 updateUI();
@@ -196,6 +197,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 mWandDevice.password = mNewPassword;
+                L.debug("Changed password to: " + mNewPassword);
                 mNewPassword = null;
                 updateUI();
                 updateDB();
@@ -224,16 +226,16 @@ public class DeviceDetailActivity extends AppCompatActivity {
                     String[] separated = data.split(",");
                     String version = separated[0].substring(3);
                     String firmware = separated[1].substring(3, separated[1].length() - 1);
-                    L.debug(version);
-                    L.debug(firmware);
+                    L.debug("Updated version: " + version);
+                    L.debug("Updated firmware: " + firmware);
                     mWandDevice.version = version;
                     mWandDevice.firmware = firmware;
-                    Database.mWandDeviceDao.updateDevice(mWandDevice);
+                    updateDB();
                     updateUI();
                     getManufacturingDate();
                 }
                 if (data.contains("#F:")) {
-                    L.debug(data.substring(3, data.length() - 1));
+                    L.debug("Updated manufacturing date: " + data.substring(3, data.length() - 1));
                     mWandDevice.manufacturing_date = data.substring(3, data.length() - 1);
                     updateDB();
                     updateUI();
@@ -242,14 +244,18 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 if (data.contains("#E") && data.contains("OK@")) {
                     if (data.contains(WandAttributes.MODE_MANUAL)) {
                         mWandDevice.mode = "M";
+                        L.debug("Updated mode status: " + WandAttributes.MODE_MANUAL);
                     } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
                         mWandDevice.mode = "A";
+                        L.debug("Updated mode status: " + WandAttributes.MODE_AUTOMATIC);
                     }
 
                     if (data.contains(WandAttributes.RELAY_ENABLED)) {
                         mWandDevice.relay = 1;
+                        L.debug("Updated relay status: " + WandAttributes.RELAY_ENABLED);
                     } else if (data.contains(WandAttributes.RELAY_DISABLED)) {
                         mWandDevice.relay = 0;
+                        L.debug("Updated relay status: " + WandAttributes.RELAY_DISABLED);
                     }
                     updateDB();
                     updateUI();
