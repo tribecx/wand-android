@@ -1,14 +1,8 @@
 package com.tunashields.wand.activities;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,9 +12,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -42,7 +34,6 @@ import com.tunashields.wand.utils.WandUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements WandDevicesAdapter.OnItemClickListener,
         WandDevicesAdapter.OnLockClickListener, SwipeRefreshLayout.OnRefreshListener {
@@ -284,6 +275,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     @Override
     public void onRefresh() {
         getConnectedDevices();
+        connectDevices();
         mRefreshDevices.setRefreshing(false);
     }
 

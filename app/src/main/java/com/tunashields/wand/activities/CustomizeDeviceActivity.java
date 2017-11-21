@@ -13,7 +13,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
@@ -23,6 +22,7 @@ import com.tunashields.wand.fragments.AssignNameFragment;
 import com.tunashields.wand.fragments.AssignOwnerFragment;
 import com.tunashields.wand.fragments.AssignPasswordFragment;
 import com.tunashields.wand.fragments.DoneDialogFragment;
+import com.tunashields.wand.fragments.ErrorDialogFragment;
 import com.tunashields.wand.fragments.ProgressDialogFragment;
 import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
@@ -123,12 +123,11 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         mCantConnectRunnable = new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(getApplicationContext(), getString(R.string.error_connecting_device), Toast.LENGTH_LONG).show();
                 if (mBluetoothLeService != null) {
                     mBluetoothLeService.disconnect(mDeviceAddress);
                     mBluetoothLeService.closeConnection(mDeviceAddress);
                 }
-                finish();
+                showErrorDialog();
             }
         };
         mCantConnectHandler = new Handler();
@@ -221,12 +220,6 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                     configureNameAndOwner();
                 }
                 break;
-            case WandAttributes.ENTER_PASSWORD_ERROR:
-                Toast.makeText(getApplicationContext(), getString(R.string.error_connecting_device), Toast.LENGTH_LONG).show();
-                mBluetoothLeService.disconnect(mDeviceAddress);
-                mBluetoothLeService.closeConnection(mDeviceAddress);
-                finish();
-                break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
@@ -242,12 +235,6 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                     }, 1000);
                 }
                 break;
-            case WandAttributes.CHANGE_PASSWORD_ERROR:
-                Toast.makeText(getApplicationContext(), getString(R.string.error_changing_password), Toast.LENGTH_LONG).show();
-                mBluetoothLeService.disconnect(mDeviceAddress);
-                mBluetoothLeService.closeConnection(mDeviceAddress);
-                finish();
-                break;
             case WandAttributes.CHANGE_NAME_OK:
                 if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
@@ -260,6 +247,12 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                         }
                     }
                 }
+                break;
+            case WandAttributes.ENTER_PASSWORD_ERROR:
+            case WandAttributes.CHANGE_PASSWORD_ERROR:
+                mBluetoothLeService.disconnect(mDeviceAddress);
+                mBluetoothLeService.closeConnection(mDeviceAddress);
+                showErrorDialog();
                 break;
         }
     }
@@ -329,5 +322,10 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         DoneDialogFragment mDoneDialogFragment = DoneDialogFragment.newInstance(getString(R.string.label_name_and_owner_added_properly));
         mDoneDialogFragment.setCancelable(false);
         mDoneDialogFragment.show(getSupportFragmentManager(), "done_dialog");
+    }
+
+    private void showErrorDialog() {
+        ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
+        mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
     }
 }
