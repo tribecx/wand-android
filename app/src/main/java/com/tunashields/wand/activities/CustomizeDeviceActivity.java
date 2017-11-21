@@ -92,10 +92,8 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 processData(data);
             }
             if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                L.debug("CustomizeDeviceActivity: Device disconnected");
                 mBluetoothLeService.connect(mDeviceAddress);
             }
-            // TODO: 11/15/17 Restore Android 5.0 compatibility
         }
     };
 
@@ -235,13 +233,13 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                     L.debug("Password changed correctly");
                     mBluetoothLeService.disconnect(mDeviceAddress);
                     mBluetoothLeService.closeConnection(mDeviceAddress);
-                    /* Trying to reconnect after 6 seconds */
+                    /* Trying to reconnect after 1 second */
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             mBluetoothLeService.connect(mDeviceAddress);
                         }
-                    }, 6000);
+                    }, 1000);
                 }
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
