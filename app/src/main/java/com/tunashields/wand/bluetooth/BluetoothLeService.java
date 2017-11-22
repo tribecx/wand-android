@@ -77,8 +77,8 @@ public class BluetoothLeService extends Service {
 
                 // Attempts to discover services after successful connection.
                 if (mGattHashMap.containsKey(gatt.getDevice().getAddress())) {
-                    boolean didstartServicesDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
-                    L.info("Attempting to start service discovery: " + didstartServicesDiscovery);
+                    boolean didStartServicesDiscovery = mGattHashMap.get(gatt.getDevice().getAddress()).discoverServices();
+                    L.info("Attempting to start service discovery: " + didStartServicesDiscovery);
                 }
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -108,9 +108,19 @@ public class BluetoothLeService extends Service {
                     BluetoothGattCharacteristic mCustomCharacteristic = mCustomService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
                     if (mCustomCharacteristic != null) {
                         L.debug("Wand characteristic founded: " + mCustomCharacteristic.getUuid().toString());
+                        if ((mCustomCharacteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                            // If there is an active notification on a characteristic, clear
+                            // it first so it doesn't update the data field on the user interface.
+                            if (mCustomCharacteristic != null) {
+                                mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, false);
+                            }
+                            //mGattHashMap.get(address).readCharacteristic(mCustomCharacteristic);
+                        }
+
                         mGattHashMap.get(address).setCharacteristicNotification(mCustomCharacteristic, true);
                         BluetoothGattDescriptor mDescriptor = mCustomCharacteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
                         mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                        mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
                         mGattHashMap.get(address).writeDescriptor(mDescriptor);
                     }
                 }
@@ -119,6 +129,14 @@ public class BluetoothLeService extends Service {
             } else {
                 L.warning("onServicesDiscovered received: error - status: " + status);
             }
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+            String address = gatt.getDevice().getAddress();
+            String value = new String(characteristic.getValue());
+            L.debug("onCharacteristicRead() - Address: " + address + " Data: " + value);
         }
 
         @Override
@@ -231,10 +249,29 @@ public class BluetoothLeService extends Service {
      * callback.
      */
     public boolean connect(final String address) {
-        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
+        if (mBluetoothAdapter == null || address == null) {
+            L.warning("BluetoothAdapter not initialized or unspecified address.");
+            return false;
+        }
+
+        // Previously connected device. Try to reconnect.
+        if (mGattHashMap.containsKey(address)) {
             if (mGattHashMap.get(address) != null) {
-                mGattHashMap.get(address).disconnect();
+                L.debug("Trying to use an existing mBluetoothGatt for connection.");
+                if (mGattHashMap.get(address).connect()) {
+                    L.debug("re-connect :true");
+                    mConnectionState = STATE_CONNECTING;
+                    return true;
+                } else {
+                    /*final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+                    BluetoothGatt bluetoothGatt = device.connectGatt(this, false, mGattCallback);
+                    mGattHashMap.put(address, bluetoothGatt);*/
+                    return false;
+                }
             }
+        }
+
+        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
 
             final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 
@@ -355,6 +392,12 @@ public class BluetoothLeService extends Service {
         } else {
             L.debug("Correctly written value: " + value);
             return true;
+        }
+    }
+
+    public void removeConnectedAddress(String address) {
+        if (mConnectedAddresses.contains(address)) {
+            mConnectedAddresses.remove(address);
         }
     }
 }

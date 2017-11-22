@@ -224,8 +224,6 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
                     L.debug("Password changed correctly");
-                    mBluetoothLeService.disconnect(mDeviceAddress);
-                    mBluetoothLeService.closeConnection(mDeviceAddress);
                     /* Trying to reconnect after 1 second */
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -240,8 +238,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(new WandDevice(mDeviceAddress, mCustomName, mCustomOwner, mCustomPassword, "M", 0, true))) {
                             L.debug("Device " + mCustomName + " of " + mCustomOwner + " added");
-                            mBluetoothLeService.disconnect(mDeviceAddress);
-                            mBluetoothLeService.closeConnection(mDeviceAddress);
+                            mBluetoothLeService.removeConnectedAddress(mDeviceAddress);
                             dismissProgressDialog();
                             showDoneDialog();
                         }

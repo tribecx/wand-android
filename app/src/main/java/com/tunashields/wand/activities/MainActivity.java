@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         populateList();
         setVisibleLayout();
         getConnectedDevices();
+        connectDevices();
     }
 
     @Override
