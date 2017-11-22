@@ -191,7 +191,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                     public void run() {
                         mBluetoothLeService.connect(mWandDevice.address);
                     }
-                }, 6000);
+                }, 1000);
                 dismissProgress();
                 showProgress(getString(R.string.label_connecting), true);
                 break;
@@ -201,16 +201,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 mNewPassword = null;
                 updateUI();
                 updateDB();
-                mBluetoothLeService.disconnect(mWandDevice.address);
-                mBluetoothLeService.closeConnection(mWandDevice.address);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mBluetoothLeService.connect(mWandDevice.address);
-                    }
-                }, 6000);
                 dismissProgress();
-                showProgress(getString(R.string.label_connecting), true);
                 break;
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 mNewPassword = null;
