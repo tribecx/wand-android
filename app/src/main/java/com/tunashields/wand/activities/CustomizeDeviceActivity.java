@@ -216,21 +216,14 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                     L.debug("Enter password OK");
                     dismissProgressDialog();
                     showAssignNameFragment();
-                } else if (mStatus.equals(WandAttributes.CHANGE_PASSWORD_OK)) {
-                    configureNameAndOwner();
                 }
                 break;
             case WandAttributes.CHANGE_PASSWORD_OK:
                 if (mStatus.equals(WandAttributes.ENTER_PASSWORD_OK)) {
                     mStatus = WandAttributes.CHANGE_PASSWORD_OK;
                     L.debug("Password changed correctly");
-                    /* Trying to reconnect after 1 second */
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            mBluetoothLeService.connect(mDeviceAddress);
-                        }
-                    }, 1000);
+
+                    configureNameAndOwner();
                 }
                 break;
             case WandAttributes.CHANGE_NAME_OK:
