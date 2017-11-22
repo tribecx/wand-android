@@ -51,12 +51,12 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         ViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
-            mRootItemLayout = itemView.findViewById(R.id.item_wand_device);
-            mWandDeviceImageView = itemView.findViewById(R.id.image_wand_device_type);
+            mRootItemLayout = (ConstraintLayout) itemView.findViewById(R.id.item_wand_device);
+            mWandDeviceImageView = (ImageView) itemView.findViewById(R.id.image_wand_device_type);
             mSeparatorView = itemView.findViewById(R.id.separator);
-            mWandDeviceNameView = itemView.findViewById(R.id.text_wand_device_name);
-            mWandDeviceOwnerView = itemView.findViewById(R.id.text_wand_device_owner);
-            mStatusDeviceButton = itemView.findViewById(R.id.button_wand_device_state);
+            mWandDeviceNameView = (TextView) itemView.findViewById(R.id.text_wand_device_name);
+            mWandDeviceOwnerView = (TextView) itemView.findViewById(R.id.text_wand_device_owner);
+            mStatusDeviceButton = (Button) itemView.findViewById(R.id.button_wand_device_state);
         }
 
         @Override

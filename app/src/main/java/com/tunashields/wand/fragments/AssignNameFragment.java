@@ -40,7 +40,7 @@ public class AssignNameFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mNameView = view.findViewById(R.id.edit_enter_device_name);
+        mNameView = (EditText) view.findViewById(R.id.edit_enter_device_name);
         mNameView.requestFocus();
         mNameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override

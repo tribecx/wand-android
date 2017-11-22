@@ -373,7 +373,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_change_name, null);
 
-        final EditText mNameView = view.findViewById(R.id.edit_change_name);
+        final EditText mNameView = (EditText) view.findViewById(R.id.edit_change_name);
 
         final AlertDialog dialog = new AlertDialog.Builder(DeviceDetailActivity.this)
                 .setView(view)
@@ -433,7 +433,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_change_owner, null);
 
-        final EditText mOwnerView = view.findViewById(R.id.edit_change_owner);
+        final EditText mOwnerView = (EditText) view.findViewById(R.id.edit_change_owner);
 
         final AlertDialog dialog = new AlertDialog.Builder(DeviceDetailActivity.this)
                 .setView(view)
@@ -490,8 +490,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_change_password, null);
 
-        final EditText mPasswordView = view.findViewById(R.id.edit_change_password);
-        final EditText mConfirmPasswordView = view.findViewById(R.id.edit_confirm_password);
+        final EditText mPasswordView = (EditText) view.findViewById(R.id.edit_change_password);
+        final EditText mConfirmPasswordView = (EditText) view.findViewById(R.id.edit_confirm_password);
 
         final AlertDialog dialog = new AlertDialog.Builder(DeviceDetailActivity.this)
                 .setView(view)

@@ -68,10 +68,10 @@ public class OnboardingFragment extends Fragment {
                 R.string.label_onboarding_section_3
         };
 
-        ImageView imageView = rootView.findViewById(R.id.section_image);
+        ImageView imageView = (ImageView) rootView.findViewById(R.id.section_image);
         imageView.setImageResource(mSectionResources[sectionNumber]);
 
-        TextView textView = rootView.findViewById(R.id.section_label);
+        TextView textView = (TextView) rootView.findViewById(R.id.section_label);
         textView.setText(mSectionStrings[sectionNumber]);
         return rootView;
     }

@@ -9,6 +9,7 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.tunashields.wand.R;
 
@@ -47,7 +48,7 @@ public class ErrorDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        FloatingActionButton mShowTipsButton = view.findViewById(R.id.fab_tips);
+        FloatingActionButton mShowTipsButton = (FloatingActionButton) view.findViewById(R.id.fab_tips);
         mShowTipsButton.setVisibility(mShowTips ? View.VISIBLE : View.GONE);
         mShowTipsButton.setOnClickListener(new View.OnClickListener() {
             @Override

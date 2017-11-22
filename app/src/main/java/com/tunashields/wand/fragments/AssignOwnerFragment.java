@@ -41,7 +41,7 @@ public class AssignOwnerFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mOwnerView = view.findViewById(R.id.edit_enter_device_owner);
+        mOwnerView = (EditText) view.findViewById(R.id.edit_enter_device_owner);
         mOwnerView.requestFocus();
         mOwnerView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override

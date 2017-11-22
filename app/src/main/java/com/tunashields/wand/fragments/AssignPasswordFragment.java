@@ -39,7 +39,7 @@ public class AssignPasswordFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mPasswordView = view.findViewById(R.id.edit_enter_device_password);
+        mPasswordView = (EditText) view.findViewById(R.id.edit_enter_device_password);
         mPasswordView.requestFocus();
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
