@@ -50,6 +50,8 @@ public class CustomizeDeviceActivity extends AppCompatActivity
 
     private ProgressDialogFragment mProgressDialogFragment;
 
+    private boolean isShowingErrorMessage = false;
+
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -92,7 +94,8 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 processData(data);
             }
             if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mBluetoothLeService.connect(mDeviceAddress);
+                if (!isShowingErrorMessage)
+                    mBluetoothLeService.connect(mDeviceAddress);
             }
         }
     };
@@ -131,7 +134,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             }
         };
         mCantConnectHandler = new Handler();
-        mCantConnectHandler.postDelayed(mCantConnectRunnable, 10000);
+        mCantConnectHandler.postDelayed(mCantConnectRunnable, 20 * 1000);
     }
 
     @Override
@@ -317,5 +320,6 @@ public class CustomizeDeviceActivity extends AppCompatActivity
     private void showErrorDialog() {
         ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
         mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
+        isShowingErrorMessage = true;
     }
 }

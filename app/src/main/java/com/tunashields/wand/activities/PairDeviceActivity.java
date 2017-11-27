@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -40,13 +41,16 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private EditText mEnterPasswordView;
 
-    private ProgressDialogFragment mProgressDialogFragment;
-
     private BluetoothLeService mBluetoothLeService;
+
+    private Handler mCantConnectHandler;
+    private Runnable mCantConnectRunnable;
 
     private String mPassword = null;
 
     private WandDevice mWandDevice;
+
+    private ProgressDialogFragment mProgressDialogFragment;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -101,6 +105,17 @@ public class PairDeviceActivity extends AppCompatActivity {
         if (mDeviceName.contains(WandAttributes.NEW_DEVICE_KEY)) {
             showAddDeviceDialog();
         } else {
+            mCantConnectRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (mBluetoothLeService != null) {
+                        mBluetoothLeService.disconnect(mDeviceAddress);
+                        mBluetoothLeService.closeConnection(mDeviceAddress);
+                    }
+                }
+            };
+            mCantConnectHandler = new Handler();
+            mCantConnectHandler.postDelayed(mCantConnectRunnable, 20 * 1000);
             showPairDeviceScreen();
         }
     }
@@ -177,6 +192,7 @@ public class PairDeviceActivity extends AppCompatActivity {
     private void processData(String data) {
         switch (data) {
             case WandAttributes.DETECT_NEW_CONNECTION:
+                mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
                 sendPassword();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
