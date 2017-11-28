@@ -174,7 +174,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                             }
                         };
                         mCantConnectHandler = new Handler();
-                        mCantConnectHandler.postDelayed(mCantConnectRunnable, 20 * 1000);
+                        mCantConnectHandler.postDelayed(mCantConnectRunnable, 35 * 1000);
 
                         mBluetoothLeService.connect(mDeviceAddress);
                     }
