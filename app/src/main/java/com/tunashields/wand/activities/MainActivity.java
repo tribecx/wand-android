@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
         if (mAdapter.getItemCount() > 0) {
             mAdapter.clear();
         }
-        mAdapter.addAll(Database.mWandDeviceDao.getAllDevices());
+        mAdapter.addAll(mPairedDevices);
     }
 
     private void getConnectedDevices() {
@@ -237,13 +237,19 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     private void connectDevices() {
         if (mBluetoothLeService != null) {
             for (final WandDevice device : mPairedDevices) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        L.debug("Trying to connect " + device.name + " device");
-                        mBluetoothLeService.connect(device.address);
-                    }
-                }).run();
+                try {
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            L.debug("Trying to connect " + device.name + " device");
+                            mBluetoothLeService.connect(device.address);
+                        }
+                    });
+                    thread.run();
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -362,21 +368,13 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 }
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (address != null) {
-                            if (mPairedDevicesMap != null && mPairedDevicesMap.containsKey(address)) {
-                                if (mAdapter != null)
-                                    mAdapter.notifyDeviceFounded(address);
-                            }
-                            mBluetoothLeService.writeCharacteristic(address, WandUtils.getState());
-                        }
-                    }
-                });
+                updateUI(address);
                 break;
             default:
                 if (address != null) {
+                    if (data.contains(WandAttributes.ENTER_PASSWORD_OK)) {
+                        updateUI(address);
+                    }
                     if (data.contains("#E") && data.contains("OK@")) {
                         if (data.contains(WandAttributes.MODE_MANUAL)) {
                             device.mode = "M";
@@ -406,6 +404,21 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 });
                 break;
         }
+    }
+
+    private void updateUI(final String address) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (address != null) {
+                    if (mPairedDevicesMap != null && mPairedDevicesMap.containsKey(address)) {
+                        if (mAdapter != null)
+                            mAdapter.notifyDeviceFounded(address);
+                    }
+                    mBluetoothLeService.writeCharacteristic(address, WandUtils.getState());
+                }
+            }
+        });
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {

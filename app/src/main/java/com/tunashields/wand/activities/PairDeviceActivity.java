@@ -105,17 +105,6 @@ public class PairDeviceActivity extends AppCompatActivity {
         if (mDeviceName.contains(WandAttributes.NEW_DEVICE_KEY)) {
             showAddDeviceDialog();
         } else {
-            mCantConnectRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (mBluetoothLeService != null) {
-                        mBluetoothLeService.disconnect(mDeviceAddress);
-                        mBluetoothLeService.closeConnection(mDeviceAddress);
-                    }
-                }
-            };
-            mCantConnectHandler = new Handler();
-            mCantConnectHandler.postDelayed(mCantConnectRunnable, 20 * 1000);
             showPairDeviceScreen();
         }
     }
@@ -173,6 +162,20 @@ public class PairDeviceActivity extends AppCompatActivity {
                 if (id == EditorInfo.IME_ACTION_GO) {
                     if (isValidPassword()) {
                         showProgressDialog(getString(R.string.prompt_linking_device));
+
+                        mCantConnectRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mBluetoothLeService != null) {
+                                    mBluetoothLeService.disconnect(mDeviceAddress);
+                                    mBluetoothLeService.closeConnection(mDeviceAddress);
+                                }
+                                showErrorDialog();
+                            }
+                        };
+                        mCantConnectHandler = new Handler();
+                        mCantConnectHandler.postDelayed(mCantConnectRunnable, 20 * 1000);
+
                         mBluetoothLeService.connect(mDeviceAddress);
                     }
                     return true;
