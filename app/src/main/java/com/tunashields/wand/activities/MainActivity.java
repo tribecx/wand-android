@@ -33,13 +33,18 @@ import com.tunashields.wand.utils.WandUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity implements WandDevicesAdapter.OnItemClickListener,
         WandDevicesAdapter.OnLockClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     private ArrayList<WandDevice> mPairedDevices;
     private HashMap<String, WandDevice> mPairedDevicesMap = new HashMap<>();
+
+    private Queue<WandDevice> mConnectionsList = new LinkedList<>();
+    private Thread mConnectionThread = null;
 
     private BluetoothAdapter mBluetoothAdapter;
 
@@ -215,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 mPairedDevicesMap.put(mPairedDevices.get(i).address, mPairedDevices.get(i));
             }
         }
+        mConnectionsList.addAll(mPairedDevices);
     }
 
     private void populateList() {
@@ -236,21 +242,18 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
     private void connectDevices() {
         if (mBluetoothLeService != null) {
-            for (final WandDevice device : mPairedDevices) {
-                try {
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            L.debug("Trying to connect " + device.name + " device");
-                            mBluetoothLeService.connect(device.address);
-                        }
-                    });
-                    thread.run();
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            mConnectionThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (!mConnectionsList.isEmpty()) {
+                        mBluetoothLeService.connect(mConnectionsList.poll().address);
+                    }
+                    mConnectionThread.interrupt();
+                    mConnectionThread = null;
                 }
-            }
+            });
+
+            mConnectionThread.start();
         }
     }
 
