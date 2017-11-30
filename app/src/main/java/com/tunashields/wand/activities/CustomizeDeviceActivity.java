@@ -97,6 +97,11 @@ public class CustomizeDeviceActivity extends AppCompatActivity
                 if (!isShowingErrorMessage)
                     mBluetoothLeService.connect(mDeviceAddress);
             }
+            if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
+                if (mCantConnectHandler != null && mCantConnectRunnable != null)
+                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                showErrorDialog();
+            }
         }
     };
 
@@ -134,7 +139,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             }
         };
         mCantConnectHandler = new Handler();
-        mCantConnectHandler.postDelayed(mCantConnectRunnable, 20 * 1000);
+        mCantConnectHandler.postDelayed(mCantConnectRunnable, 60 * 1000);
     }
 
     @Override
@@ -245,6 +250,8 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             case WandAttributes.CHANGE_PASSWORD_ERROR:
                 mBluetoothLeService.disconnect(mDeviceAddress);
                 mBluetoothLeService.closeConnection(mDeviceAddress);
+                if (mCantConnectHandler != null && mCantConnectRunnable != null)
+                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
                 showErrorDialog();
                 break;
         }
@@ -286,6 +293,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ERROR_CONFIGURATION);
         return intentFilter;
     }
 
@@ -318,8 +326,13 @@ public class CustomizeDeviceActivity extends AppCompatActivity
     }
 
     private void showErrorDialog() {
-        ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
-        mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
-        isShowingErrorMessage = true;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
+                mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
+                isShowingErrorMessage = true;
+            }
+        });
     }
 }

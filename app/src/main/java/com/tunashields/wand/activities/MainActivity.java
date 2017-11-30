@@ -33,13 +33,18 @@ import com.tunashields.wand.utils.WandUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity implements WandDevicesAdapter.OnItemClickListener,
         WandDevicesAdapter.OnLockClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     private ArrayList<WandDevice> mPairedDevices;
     private HashMap<String, WandDevice> mPairedDevicesMap = new HashMap<>();
+
+    private Queue<WandDevice> mConnectionsList = new LinkedList<>();
+    private Thread mConnectionThread = null;
 
     private BluetoothAdapter mBluetoothAdapter;
 
@@ -232,25 +237,33 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 }
             }
         }
+        for (WandDevice wandDevice : mPairedDevices) {
+            if (mBluetoothLeService != null && mBluetoothLeService.mConnectedAddresses != null) {
+                if (!mBluetoothLeService.mConnectedAddresses.contains(wandDevice.address)) {
+                    mConnectionsList.add(wandDevice);
+                }
+            }
+        }
     }
 
     private void connectDevices() {
         if (mBluetoothLeService != null) {
-            for (final WandDevice device : mPairedDevices) {
-                try {
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
+            mConnectionThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (!mConnectionsList.isEmpty()) {
+                        WandDevice device = mConnectionsList.poll();
+                        if (!mBluetoothLeService.mConnectedAddresses.contains(device.address)) {
                             L.debug("Trying to connect " + device.name + " device");
                             mBluetoothLeService.connect(device.address);
                         }
-                    });
-                    thread.run();
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    }
+                    mConnectionThread.interrupt();
+                    mConnectionThread = null;
                 }
-            }
+            });
+
+            mConnectionThread.start();
         }
     }
 
@@ -353,57 +366,62 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     private void processData(final String address, final String data) {
-        WandDevice device = mPairedDevicesMap.get(address);
-        switch (data) {
-            case WandAttributes.DETECT_NEW_CONNECTION:
-                if (mBluetoothLeService != null && device != null) {
-                    mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
-                }
-                break;
-            case WandAttributes.AUTOMATIC_LOCK:
-                if (device != null) {
-                    device.relay = 1;
-                    Database.mWandDeviceDao.updateDevice(device);
-                    mAdapter.update(device);
-                }
-                break;
-            case WandAttributes.ENTER_PASSWORD_OK:
-                updateUI(address);
-                break;
-            default:
-                if (address != null) {
-                    if (data.contains(WandAttributes.ENTER_PASSWORD_OK)) {
-                        updateUI(address);
-                    }
-                    if (data.contains("#E") && data.contains("OK@")) {
-                        if (data.contains(WandAttributes.MODE_MANUAL)) {
-                            device.mode = "M";
-                            L.debug("Updated mode status: " + WandAttributes.MODE_MANUAL);
-                        } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
-                            device.mode = "A";
-                            L.debug("Updated mode status: " + WandAttributes.MODE_AUTOMATIC);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                WandDevice device = mPairedDevicesMap.get(address);
+                switch (data) {
+                    case WandAttributes.DETECT_NEW_CONNECTION:
+                        if (mBluetoothLeService != null && device != null) {
+                            mBluetoothLeService.writeCharacteristic(address, WandUtils.setEnterPasswordFormat(device.password));
                         }
-                        if (data.contains(WandAttributes.RELAY_ENABLED)) {
+                        break;
+                    case WandAttributes.AUTOMATIC_LOCK:
+                        if (device != null) {
                             device.relay = 1;
-                            L.debug("Updated relay status: " + WandAttributes.RELAY_ENABLED);
-                        } else if (data.contains(WandAttributes.RELAY_DISABLED)) {
-                            device.relay = 0;
-                            L.debug("Updated relay status: " + WandAttributes.RELAY_DISABLED);
-                        }
-                        if (Database.mWandDeviceDao.updateDevice(device)) {
+                            Database.mWandDeviceDao.updateDevice(device);
                             mAdapter.update(device);
-                            L.info("Device " + device.address + " of " + device.owner + " updated.");
                         }
-                    }
+                        break;
+                    case WandAttributes.ENTER_PASSWORD_OK:
+                        updateUI(address);
+                        break;
+                    default:
+                        if (address != null) {
+                            if (data.contains(WandAttributes.ENTER_PASSWORD_OK)) {
+                                updateUI(address);
+                            }
+                            if (data.contains("#E") && data.contains("OK@")) {
+                                if (data.contains(WandAttributes.MODE_MANUAL)) {
+                                    device.mode = "M";
+                                    L.debug("Updated mode status: " + WandAttributes.MODE_MANUAL);
+                                } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
+                                    device.mode = "A";
+                                    L.debug("Updated mode status: " + WandAttributes.MODE_AUTOMATIC);
+                                }
+                                if (data.contains(WandAttributes.RELAY_ENABLED)) {
+                                    device.relay = 1;
+                                    L.debug("Updated relay status: " + WandAttributes.RELAY_ENABLED);
+                                } else if (data.contains(WandAttributes.RELAY_DISABLED)) {
+                                    device.relay = 0;
+                                    L.debug("Updated relay status: " + WandAttributes.RELAY_DISABLED);
+                                }
+                                if (Database.mWandDeviceDao.updateDevice(device)) {
+                                    mAdapter.update(device);
+                                    L.info("Device " + device.address + " of " + device.owner + " updated.");
+                                }
+                            }
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        });
+                        break;
                 }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-                break;
-        }
+            }
+        }).run();
     }
 
     private void updateUI(final String address) {

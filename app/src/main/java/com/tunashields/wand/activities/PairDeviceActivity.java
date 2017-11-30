@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.tunashields.wand.R;
 import com.tunashields.wand.bluetooth.BluetoothLeService;
@@ -84,8 +83,9 @@ public class PairDeviceActivity extends AppCompatActivity {
             }
             if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
                 dismissProgressDialog();
-                Toast.makeText(getApplicationContext(), getString(R.string.error_device_configuration), Toast.LENGTH_SHORT).show();
-                finish();
+                if (mCantConnectHandler != null && mCantConnectRunnable != null)
+                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                showErrorDialog();
             }
         }
     };
@@ -174,7 +174,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                             }
                         };
                         mCantConnectHandler = new Handler();
-                        mCantConnectHandler.postDelayed(mCantConnectRunnable, 20 * 1000);
+                        mCantConnectHandler.postDelayed(mCantConnectRunnable, 60 * 1000);
 
                         mBluetoothLeService.connect(mDeviceAddress);
                     }
@@ -195,7 +195,8 @@ public class PairDeviceActivity extends AppCompatActivity {
     private void processData(String data) {
         switch (data) {
             case WandAttributes.DETECT_NEW_CONNECTION:
-                mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                if (mCantConnectHandler != null && mCantConnectRunnable != null)
+                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
                 sendPassword();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
@@ -204,6 +205,8 @@ public class PairDeviceActivity extends AppCompatActivity {
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
                 dismissProgressDialog();
+                if (mCantConnectHandler != null && mCantConnectRunnable != null)
+                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
                 showErrorDialog();
                 break;
             default:
@@ -319,7 +322,12 @@ public class PairDeviceActivity extends AppCompatActivity {
     }
 
     private void showErrorDialog() {
-        ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
-        mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
+                mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
+            }
+        });
     }
 }

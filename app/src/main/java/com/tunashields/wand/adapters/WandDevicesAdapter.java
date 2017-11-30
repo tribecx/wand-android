@@ -127,6 +127,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (!wandDevice.close) {
             holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_gray_borders_button);
             holder.mStatusDeviceButton.setText("");
+            holder.mStatusDeviceButton.setOnClickListener(null);
             return;
         }
 
