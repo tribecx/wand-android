@@ -1,15 +1,20 @@
 package com.tunashields.wand.activities;
 
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -20,7 +25,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.tunashields.wand.R;
-import com.tunashields.wand.bluetooth.BluetoothLeService;
 import com.tunashields.wand.bluetooth.WandAttributes;
 import com.tunashields.wand.data.Database;
 import com.tunashields.wand.fragments.DoneDialogFragment;
@@ -29,6 +33,9 @@ import com.tunashields.wand.fragments.ProgressDialogFragment;
 import com.tunashields.wand.models.WandDevice;
 import com.tunashields.wand.utils.L;
 import com.tunashields.wand.utils.WandUtils;
+
+import java.lang.reflect.Method;
+import java.util.UUID;
 
 public class PairDeviceActivity extends AppCompatActivity {
 
@@ -40,7 +47,9 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private EditText mEnterPasswordView;
 
-    private BluetoothLeService mBluetoothLeService;
+    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothGatt mBluetoothGatt;
+    private BluetoothGattCharacteristic mCharacteristic;
 
     private Handler mCantConnectHandler;
     private Runnable mCantConnectRunnable;
@@ -51,44 +60,7 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private ProgressDialogFragment mProgressDialogFragment;
 
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            mBluetoothLeService = ((BluetoothLeService.LocalBinder) iBinder).getService();
-            if (!mBluetoothLeService.initialize()) {
-                L.error("Unable to initialize Bluetooth");
-                finish();
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mBluetoothLeService = null;
-        }
-    };
-
-    // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
-    //                        or notification operations.
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                processData(data);
-            }
-            if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
-                dismissProgressDialog();
-                if (mCantConnectHandler != null && mCantConnectRunnable != null)
-                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
-                showErrorDialog();
-            }
-        }
-    };
+    private boolean isShowingErrorMessage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,8 +71,8 @@ public class PairDeviceActivity extends AppCompatActivity {
         mDeviceName = extras.getString(EXTRA_DEVICE_NAME);
         mDeviceAddress = extras.getString(EXTRA_DEVICE_ADDRESS);
 
-        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
 
         if (mDeviceName.contains(WandAttributes.NEW_DEVICE_KEY)) {
             showAddDeviceDialog();
@@ -110,22 +82,11 @@ public class PairDeviceActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(mGattUpdateReceiver);
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mServiceConnection);
-        mBluetoothLeService = null;
+        if (mCantConnectHandler != null && mCantConnectRunnable != null)
+            mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+        closeConnection();
     }
 
     private void showAddDeviceDialog() {
@@ -166,17 +127,14 @@ public class PairDeviceActivity extends AppCompatActivity {
                         mCantConnectRunnable = new Runnable() {
                             @Override
                             public void run() {
-                                if (mBluetoothLeService != null) {
-                                    mBluetoothLeService.disconnect(mDeviceAddress);
-                                    mBluetoothLeService.closeConnection(mDeviceAddress);
-                                }
+                                closeConnection();
                                 showErrorDialog();
                             }
                         };
                         mCantConnectHandler = new Handler();
                         mCantConnectHandler.postDelayed(mCantConnectRunnable, 60 * 1000);
 
-                        mBluetoothLeService.connect(mDeviceAddress);
+                        connect(mDeviceAddress);
                     }
                     return true;
                 }
@@ -187,9 +145,155 @@ public class PairDeviceActivity extends AppCompatActivity {
         findViewById(R.id.button_cancel).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                closeConnection();
                 finish();
             }
         });
+    }
+
+    public boolean connect(final String address) {
+        if (mBluetoothAdapter == null || address == null) {
+            L.warning("BluetoothAdapter not initialized or unspecified address.");
+            return false;
+        }
+
+        // Previously connected device. Try to reconnect.
+        if (mDeviceAddress != null && address.equals(mDeviceAddress)
+                && mBluetoothGatt != null) {
+            L.debug("Trying to use an existing mBluetoothGatt for connection.");
+            if (mBluetoothGatt.connect()) {
+                L.debug("re-connect :true");
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        if (device == null) {
+            L.debug("Device not found.  Unable to connect.");
+            return false;
+        }
+
+        // We want to directly connect to the device, so we are setting the autoConnect
+        // parameter to false.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mBluetoothGatt = device.connectGatt(this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE);
+            refreshDeviceCache(mBluetoothGatt);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // From Android LOLLIPOP (21) the transport types exists, but them are hide for use,
+            // so is needed to use reflection to get the value
+            try {
+                Method connectGattMethod = device.getClass().getDeclaredMethod("connectGatt", Context.class, boolean.class, BluetoothGattCallback.class, int.class);
+                connectGattMethod.setAccessible(true);
+                mBluetoothGatt = (BluetoothGatt) connectGattMethod.invoke(device, this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE);
+            } catch (Exception ex) {
+                L.error("Error on call BluetoothDevice.connectGatt with reflection." + ex);
+            }
+        }
+
+        // If any try is fail, then call the connectGatt without transport
+        if (mBluetoothGatt == null) {
+            mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        }
+
+        L.debug("Trying to create a new connection.");
+        return true;
+    }
+
+    public void refreshDeviceCache(BluetoothGatt gatt) {
+        try {
+            Method localMethod = gatt.getClass().getMethod("refresh");
+            if (localMethod != null) {
+                boolean result = (Boolean) localMethod.invoke(gatt);
+                if (result) {
+                    L.debug("Bluetooth refresh cache");
+                }
+            }
+        } catch (Exception localException) {
+            L.error("An exception occurred while refreshing device");
+        }
+    }
+
+    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                L.info("Connected to device.");
+
+                // Attempts to discover services after successful connection.
+                boolean didStartServicesDiscovery = mBluetoothGatt.discoverServices();
+                L.info("Attempting to start service discovery: " + didStartServicesDiscovery);
+
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                L.info("Disconnected from device.");
+                if (!isShowingErrorMessage && mDeviceAddress != null)
+                    connect(mDeviceAddress);
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                L.debug("Discover services status: SUCCESS");
+
+                /**
+                 * Looking for Wand BLE Service.
+                 * */
+                BluetoothGattService mCustomService = mBluetoothGatt.getService(UUID.fromString(WandAttributes.WAND_SERVICE));
+                if (mCustomService != null) {
+                    L.debug("Wand service founded: " + mCustomService.getUuid().toString());
+                    /**
+                     * Subscribing Wand BLE Characteristic to notifications.
+                     * */
+                    mCharacteristic = mCustomService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
+                    if (mCharacteristic != null) {
+                        L.debug("Wand characteristic founded: " + mCharacteristic.getUuid().toString());
+                        if ((mCharacteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                            // If there is an active notification on a characteristic, clear
+                            // it first so it doesn't update the data field on the user interface.
+                            mBluetoothGatt.setCharacteristicNotification(mCharacteristic, false);
+                            //mGattHashMap.get(address).readCharacteristic(mCharacteristic);
+                        }
+
+                        mBluetoothGatt.setCharacteristicNotification(mCharacteristic, true);
+                        BluetoothGattDescriptor mDescriptor = mCharacteristic.getDescriptor(UUID.fromString(WandAttributes.CLIENT_CHARACTERISTIC_CONFIGURATION));
+                        mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                        mDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+                        mBluetoothGatt.writeDescriptor(mDescriptor);
+                    }
+                }
+            } else {
+                L.warning("onServicesDiscovered received: error - status: " + status);
+            }
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+            String address = gatt.getDevice().getAddress();
+            String value = new String(characteristic.getValue());
+            L.debug("onCharacteristicRead() - Address: " + address + " Data: " + value);
+        }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            String address = gatt.getDevice().getAddress();
+            String data = new String(characteristic.getValue());
+
+            L.debug("onCharacteristicChanged() - Address: " + address + " Data: " + data);
+
+            processData(data);
+        }
+    };
+
+    private void closeConnection() {
+        if (mBluetoothGatt == null) {
+            return;
+        }
+        mBluetoothGatt.disconnect();
+        mBluetoothGatt.close();
+        mBluetoothGatt = null;
     }
 
     private void processData(String data) {
@@ -207,6 +311,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                 dismissProgressDialog();
                 if (mCantConnectHandler != null && mCantConnectRunnable != null)
                     mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                closeConnection();
                 showErrorDialog();
                 break;
             default:
@@ -236,6 +341,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(mWandDevice)) {
                             L.debug("Device " + mWandDevice.name + " of " + mWandDevice.owner + " added");
+                            closeConnection();
                             dismissProgressDialog();
                             showDoneDialog();
                         }
@@ -244,20 +350,33 @@ public class PairDeviceActivity extends AppCompatActivity {
 
                 if (data.contains("#P:NO@")) {
                     dismissProgressDialog();
+                    closeConnection();
                     showErrorDialog();
                 }
                 break;
         }
     }
 
-    private static IntentFilter makeGattUpdateIntentFilter() {
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
-        intentFilter.addAction(BluetoothLeService.ERROR_CONFIGURATION);
-        return intentFilter;
+    public void writeCharacteristic(String value) {
+        if (mBluetoothAdapter == null) {
+            L.warning("BluetoothAdapter not initialized");
+            return;
+        }
+
+        if (mCharacteristic == null) {
+            L.warning("Wand BLE Characteristic not found");
+            return;
+        }
+
+        /* add value to write in characteristic */
+        mCharacteristic.setValue(value);
+        mCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+
+        if (!mBluetoothGatt.writeCharacteristic(mCharacteristic)) {
+            L.warning("Failed to write characteristic");
+        } else {
+            L.debug("Correctly written value: " + value);
+        }
     }
 
     private boolean isValidPassword() {
@@ -282,15 +401,15 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private void sendPassword() {
         L.debug("Sending password " + WandUtils.setEnterPasswordFormat(mPassword));
-        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mPassword));
+        writeCharacteristic(WandUtils.setEnterPasswordFormat(mPassword));
     }
 
     private void getOwner() {
-        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.getOwner());
+        writeCharacteristic(WandUtils.getOwner());
     }
 
     private void getState() {
-        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.getState());
+        writeCharacteristic(WandUtils.getState());
     }
 
     private void showProgressDialog(String message) {
@@ -299,10 +418,7 @@ public class PairDeviceActivity extends AppCompatActivity {
         mProgressDialogFragment.setOnCancelClickListener(new ProgressDialogFragment.OnCancelClickListener() {
             @Override
             public void onCancel() {
-                if (mBluetoothLeService != null) {
-                    mBluetoothLeService.disconnect(mDeviceAddress);
-                    mBluetoothLeService.closeConnection(mDeviceAddress);
-                }
+                closeConnection();
                 finish();
             }
         });
@@ -327,6 +443,7 @@ public class PairDeviceActivity extends AppCompatActivity {
             public void run() {
                 ErrorDialogFragment mErrorDialogFragment = ErrorDialogFragment.newInstance(true);
                 mErrorDialogFragment.show(getSupportFragmentManager(), "error_dialog");
+                isShowingErrorMessage = true;
             }
         });
     }
