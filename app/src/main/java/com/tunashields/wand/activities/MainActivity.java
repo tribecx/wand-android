@@ -408,6 +408,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     public void startAddDeviceActivity(View view) {
+        stopScan();
         startActivity(new Intent(MainActivity.this, DeviceScanActivity.class));
     }
 
