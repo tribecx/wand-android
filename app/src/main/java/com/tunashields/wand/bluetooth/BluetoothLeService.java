@@ -373,23 +373,22 @@ public class BluetoothLeService extends Service {
         BluetoothGattService mService = mGattHashMap.get(address).getService(UUID.fromString(WandAttributes.WAND_SERVICE));
         if (mService == null) {
             L.warning("Wand BLE Service not found");
-            broadcastUpdate(ERROR_CONFIGURATION);
+            broadcastUpdate(ERROR_CONFIGURATION, address);
             return false;
         }
         /* get the writable & readable characteristic from the service */
         BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(WandAttributes.WAND_CHARACTERISTIC));
         if (mCharacteristic == null) {
             L.warning("Wand BLE Characteristic not found");
-            broadcastUpdate(ERROR_CONFIGURATION);
+            broadcastUpdate(ERROR_CONFIGURATION, address);
             return false;
         }
         /* add value to write in characteristic */
         mCharacteristic.setValue(value);
-        mCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
 
         if (!mGattHashMap.get(address).writeCharacteristic(mCharacteristic)) {
             L.warning("Failed to write characteristic");
-            broadcastUpdate(ERROR_CONFIGURATION);
+            broadcastUpdate(ERROR_CONFIGURATION, address);
             return false;
         } else {
             L.debug("Correctly written value: " + value);

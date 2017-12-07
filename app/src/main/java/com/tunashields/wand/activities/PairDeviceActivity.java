@@ -81,7 +81,8 @@ public class PairDeviceActivity extends AppCompatActivity {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 processData(data);
             }
-            if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
+            if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)
+                    || BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
                 dismissProgressDialog();
                 if (mCantConnectHandler != null && mCantConnectRunnable != null)
                     mCantConnectHandler.removeCallbacks(mCantConnectRunnable);

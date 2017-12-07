@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     private ScanSettings mScanSettings;
     private List<ScanFilter> mScanFilters;
     private static final long SCAN_PERIOD = 10000; //10 seconds
+    private boolean mScanning = false;
 
     private WandDevicesAdapter mAdapter;
     private SwipeRefreshLayout mRefreshDevices;
@@ -111,6 +112,16 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 if (mPairedDevicesMap.containsKey(address)) {
                     mBluetoothLeService.disconnect(address);
                     mBluetoothLeService.closeConnection(address);
+                }
+                if (!mScanning) {
+                    startScan();
+                }
+            } else if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
+                String address = intent.getStringExtra(BluetoothLeService.EXTRA_DEVICE_ADDRESS);
+                if (mPairedDevicesMap.containsKey(address)) {
+                    mBluetoothLeService.disconnect(address);
+                    mBluetoothLeService.closeConnection(address);
+                    mAdapter.notifyDeviceDisconnected(address);
                     mBluetoothLeService.connect(address);
                 }
             }
@@ -347,16 +358,20 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 @Override
                 public void run() {
                     mLeScanner.stopScan(mScanCallback);
+                    mScanning = false;
                     connectDevices();
                 }
             }, SCAN_PERIOD);
+            mScanning = true;
             mLeScanner.startScan(mScanFilters, mScanSettings, mScanCallback);
         }
     }
 
     private void stopScan() {
-        if (mLeScanner != null)
+        if (mLeScanner != null) {
             mLeScanner.stopScan(mScanCallback);
+            mScanning = false;
+        }
     }
 
     private ScanCallback mScanCallback = new ScanCallback() {
