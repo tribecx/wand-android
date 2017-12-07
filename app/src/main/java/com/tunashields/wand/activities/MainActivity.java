@@ -184,13 +184,22 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 }
                 break;
             case MY_CONFIGURE_DEVICE_REQUEST:
-                if (data != null && data.getExtras() != null) {
-                    WandDevice device = data.getExtras().getParcelable(WandDevice.KEY);
-                    if (device != null) {
-                        mAdapter.update(mItemCurrentPosition, device);
-                        if (mPairedDevicesMap.containsKey(device.address)) {
-                            mPairedDevicesMap.remove(device.address);
-                            mPairedDevicesMap.put(device.address, device);
+                if (resultCode == Activity.RESULT_OK) {
+                    if (data != null && data.getExtras() != null) {
+                        WandDevice device = data.getExtras().getParcelable(WandDevice.KEY);
+                        if (device != null) {
+                            mAdapter.update(mItemCurrentPosition, device);
+                            if (mPairedDevicesMap.containsKey(device.address)) {
+                                mPairedDevicesMap.remove(device.address);
+                                mPairedDevicesMap.put(device.address, device);
+                            }
+                        }
+                    }
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    if (data != null && data.getExtras() != null) {
+                        WandDevice device = data.getExtras().getParcelable(WandDevice.KEY);
+                        if (device != null) {
+                            mAdapter.notifyDeviceDisconnected(device.address);
                         }
                     }
                 }

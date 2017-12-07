@@ -49,6 +49,14 @@ public class DeviceDetailActivity extends AppCompatActivity {
     private String mNewOwner = null;
     private String mNewPassword = null;
 
+    Handler mHandler = new Handler();
+    Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            disconnect();
+        }
+    };
+
     private BluetoothLeService mBluetoothLeService;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -87,6 +95,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 processData(data);
+            } else if (BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
+                disconnect();
             }
         }
     };
@@ -144,18 +154,21 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 break;
             case WandAttributes.ENABLE_RELAY_OK:
                 mWandDevice.relay = 1;
+                removeHandlerCallbacks();
                 updateUI();
                 updateDB();
                 dismissProgress();
                 break;
             case WandAttributes.DISABLE_RELAY_OK:
                 mWandDevice.relay = 0;
+                removeHandlerCallbacks();
                 updateUI();
                 updateDB();
                 dismissProgress();
                 break;
             case WandAttributes.AUTOMATIC_MODE_OK:
                 mWandDevice.mode = "A";
+                removeHandlerCallbacks();
                 updateUI();
                 updateDB();
                 dismissProgress();
@@ -167,6 +180,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
                 break;
             case WandAttributes.MANUAL_MODE_OK:
                 mWandDevice.mode = "M";
+                removeHandlerCallbacks();
                 updateUI();
                 updateDB();
                 dismissProgress();
@@ -341,6 +355,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
         } else {
             mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setRelayFormat(0));
         }
+
+        startHandlerPostDelayed();
     }
 
     public void onClickAutomaticMode(View view) {
@@ -351,6 +367,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
         } else {
             mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeModeFormat("A"));
         }
+
+        startHandlerPostDelayed();
     }
 
     public void onClickChangeName(View view) {
@@ -411,6 +429,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
             mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mNewName, mWandDevice.owner));
         else
             mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mNewName, ""));
+
+        startHandlerPostDelayed();
     }
 
     public void onClickChangeOwner(View view) {
@@ -468,6 +488,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
     private void sendNewOwner() {
         showProgress(getString(R.string.label_sending), false);
         mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangeNameAndOwnerFormat(mWandDevice.name, mNewOwner));
+
+        startHandlerPostDelayed();
     }
 
     public void onClickChangePassword(View view) {
@@ -536,6 +558,8 @@ public class DeviceDetailActivity extends AppCompatActivity {
     private void sendPassword() {
         showProgress(getString(R.string.label_sending), false);
         mBluetoothLeService.writeCharacteristic(mWandDevice.address, WandUtils.setChangePasswordFormat(mNewPassword));
+
+        startHandlerPostDelayed();
     }
 
     private void showProgress(String message, boolean cancelable) {
@@ -554,6 +578,24 @@ public class DeviceDetailActivity extends AppCompatActivity {
         if (mProgressDialog != null) {
             mProgressDialog.dismiss();
         }
+    }
+
+    private void startHandlerPostDelayed() {
+        mHandler.postDelayed(mRunnable, 15 * 1000);
+    }
+
+    private void removeHandlerCallbacks() {
+        if (mHandler != null && mRunnable != null)
+            mHandler.removeCallbacks(mRunnable);
+    }
+
+    private void disconnect() {
+        mBluetoothLeService.disconnect(mWandDevice.address);
+        mBluetoothLeService.closeConnection(mWandDevice.address);
+        Intent intent = new Intent();
+        intent.putExtra(WandDevice.KEY, mWandDevice);
+        setResult(Activity.RESULT_CANCELED, intent);
+        finish();
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
