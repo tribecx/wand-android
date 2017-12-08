@@ -42,8 +42,17 @@ public class PairDeviceActivity extends AppCompatActivity {
 
     private BluetoothLeService mBluetoothLeService;
 
-    private Handler mCantConnectHandler;
-    private Runnable mCantConnectRunnable;
+    private Handler mCantConnectHandler = new Handler();
+    private Runnable mCantConnectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mBluetoothLeService != null) {
+                mBluetoothLeService.disconnect(mDeviceAddress);
+                mBluetoothLeService.closeConnection(mDeviceAddress);
+            }
+            showErrorDialog();
+        }
+    };
 
     private String mPassword = null;
 
@@ -83,9 +92,11 @@ public class PairDeviceActivity extends AppCompatActivity {
             }
             if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)
                     || BluetoothLeService.ERROR_CONFIGURATION.equals(action)) {
+
                 dismissProgressDialog();
-                if (mCantConnectHandler != null && mCantConnectRunnable != null)
-                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                removeCallbacks();
+                mBluetoothLeService.disconnect(mDeviceAddress);
+                mBluetoothLeService.closeConnection(mDeviceAddress);
                 showErrorDialog();
             }
         }
@@ -125,6 +136,7 @@ public class PairDeviceActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        removeCallbacks();
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
     }
@@ -163,20 +175,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                 if (id == EditorInfo.IME_ACTION_GO) {
                     if (isValidPassword()) {
                         showProgressDialog(getString(R.string.prompt_linking_device));
-
-                        mCantConnectRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                if (mBluetoothLeService != null) {
-                                    mBluetoothLeService.disconnect(mDeviceAddress);
-                                    mBluetoothLeService.closeConnection(mDeviceAddress);
-                                }
-                                showErrorDialog();
-                            }
-                        };
-                        mCantConnectHandler = new Handler();
                         mCantConnectHandler.postDelayed(mCantConnectRunnable, 60 * 1000);
-
                         mBluetoothLeService.connect(mDeviceAddress);
                     }
                     return true;
@@ -196,8 +195,7 @@ public class PairDeviceActivity extends AppCompatActivity {
     private void processData(String data) {
         switch (data) {
             case WandAttributes.DETECT_NEW_CONNECTION:
-                if (mCantConnectHandler != null && mCantConnectRunnable != null)
-                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                removeCallbacks();
                 sendPassword();
                 break;
             case WandAttributes.ENTER_PASSWORD_OK:
@@ -206,8 +204,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                 break;
             case WandAttributes.ENTER_PASSWORD_ERROR:
                 dismissProgressDialog();
-                if (mCantConnectHandler != null && mCantConnectRunnable != null)
-                    mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+                removeCallbacks();
                 showErrorDialog();
                 break;
             default:
@@ -282,8 +279,10 @@ public class PairDeviceActivity extends AppCompatActivity {
     }
 
     private void sendPassword() {
-        L.debug("Sending password " + WandUtils.setEnterPasswordFormat(mPassword));
-        mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mPassword));
+        if (mPassword != null) {
+            L.debug("Sending password " + WandUtils.setEnterPasswordFormat(mPassword));
+            mBluetoothLeService.writeCharacteristic(mDeviceAddress, WandUtils.setEnterPasswordFormat(mPassword));
+        }
     }
 
     private void getOwner() {
@@ -320,6 +319,12 @@ public class PairDeviceActivity extends AppCompatActivity {
         DoneDialogFragment mDoneDialogFragment = DoneDialogFragment.newInstance(getString(R.string.label_device_added_correctly));
         mDoneDialogFragment.setCancelable(false);
         mDoneDialogFragment.show(getSupportFragmentManager(), "done_dialog");
+    }
+
+    private void removeCallbacks() {
+        if (mCantConnectHandler != null && mCantConnectRunnable != null) {
+            mCantConnectHandler.removeCallbacks(mCantConnectRunnable);
+        }
     }
 
     private void showErrorDialog() {

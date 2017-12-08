@@ -269,6 +269,14 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
+    public void notifyDeviceDisconnected(WandDevice wandDevice) {
+        if (mItems.contains(wandDevice)) {
+            int position = mItems.indexOf(wandDevice);
+            ((WandDevice) mItems.get(position)).close = false;
+            notifyItemChanged(position);
+        }
+    }
+
     public interface OnItemClickListener {
         void onItemClick(int position, Object object);
     }

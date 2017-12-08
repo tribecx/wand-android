@@ -215,8 +215,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     public void initBluetoothElements() {
-        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
+        BluetoothManager mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = mBluetoothManager.getAdapter();
         mHandler = new Handler();
     }
 
@@ -264,19 +264,23 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
     }
 
     private void getConnectedDevices() {
-        if (mBluetoothLeService != null
-                && mBluetoothLeService.mConnectedAddresses != null
-                && mBluetoothLeService.mConnectedAddresses.size() > 0) {
-            // Show actual connected devices
-            for (final String address : mBluetoothLeService.mConnectedAddresses) {
-                if (mPairedDevicesMap.containsKey(address)) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAdapter.notifyDeviceFounded(address);
-                        }
-                    });
+        if (mBluetoothLeService != null &&
+                mBluetoothLeService.mConnectedAddresses != null) {
+
+            List<String> connectedDevices = mBluetoothLeService.mConnectedAddresses;
+
+            for (WandDevice wandDevice : mPairedDevices) {
+                boolean connected = false;
+
+                for (String address : connectedDevices) {
+                    if (address.equals(wandDevice.address))
+                        connected = true;
                 }
+
+                if (connected)
+                    mAdapter.notifyDeviceFounded(wandDevice);
+                else
+                    mAdapter.notifyDeviceDisconnected(wandDevice);
             }
         }
     }
@@ -515,12 +519,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                                 }
                             }
                         }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        });
+
+                        mAdapter.notifyDataSetChanged();
                         break;
                 }
             }
