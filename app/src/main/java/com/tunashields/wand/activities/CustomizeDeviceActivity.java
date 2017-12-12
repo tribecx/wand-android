@@ -139,7 +139,7 @@ public class CustomizeDeviceActivity extends AppCompatActivity
             }
         };
         mCantConnectHandler = new Handler();
-        mCantConnectHandler.postDelayed(mCantConnectRunnable, 60 * 1000);
+        mCantConnectHandler.postDelayed(mCantConnectRunnable, 30 * 1000);
     }
 
     @Override

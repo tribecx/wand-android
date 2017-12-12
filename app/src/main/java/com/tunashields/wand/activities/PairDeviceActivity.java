@@ -175,7 +175,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                 if (id == EditorInfo.IME_ACTION_GO) {
                     if (isValidPassword()) {
                         showProgressDialog(getString(R.string.prompt_linking_device));
-                        mCantConnectHandler.postDelayed(mCantConnectRunnable, 60 * 1000);
+                        mCantConnectHandler.postDelayed(mCantConnectRunnable, 30 * 1000);
                         mBluetoothLeService.connect(mDeviceAddress);
                     }
                     return true;

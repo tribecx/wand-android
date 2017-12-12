@@ -53,13 +53,14 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
 
     private Queue<WandDevice> mConnectionsList = new LinkedList<>();
     private Thread mConnectionThread = null;
+    private ArrayList<String> mFoundedDevices = new ArrayList<>();
 
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
     private BluetoothLeScanner mLeScanner;
     private ScanSettings mScanSettings;
     private List<ScanFilter> mScanFilters;
-    private static final long SCAN_PERIOD = 10000; //10 seconds
+    private static final long SCAN_PERIOD = 4000; //4 seconds
     private boolean mScanning = false;
 
     private WandDevicesAdapter mAdapter;
@@ -300,6 +301,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     }
                     mConnectionThread.interrupt();
                     mConnectionThread = null;
+                    mFoundedDevices.clear();
                 }
             });
 
@@ -402,8 +404,10 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     && mPairedDevicesMap.containsKey(address)
                     && mBluetoothLeService != null
                     && mBluetoothLeService.mGattHashMap != null
-                    && !mBluetoothLeService.mGattHashMap.containsKey(address)) {
+                    && !mBluetoothLeService.mGattHashMap.containsKey(address)
+                    && !mFoundedDevices.contains(address)) {
 
+                mFoundedDevices.add(address);
                 mConnectionsList.add(mPairedDevicesMap.get(address));
 
                 if (mPairedDevices.size() == mConnectionsList.size()) {
