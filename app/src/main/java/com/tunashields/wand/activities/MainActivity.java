@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 L.error("Unable to initialize Bluetooth");
                 finish();
             }
-            connectDevices();
         }
 
         @Override
@@ -277,10 +276,12 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                         connected = true;
                 }
 
-                if (connected)
+                if (connected) {
                     mAdapter.notifyDeviceFounded(wandDevice);
-                else
+                } else {
+                    mBluetoothLeService.disconnect(wandDevice.address);
                     mAdapter.notifyDeviceDisconnected(wandDevice);
+                }
             }
         }
     }
@@ -370,9 +371,11 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mLeScanner.stopScan(mScanCallback);
-                    mScanning = false;
-                    connectDevices();
+                    if (mScanning) {
+                        mLeScanner.stopScan(mScanCallback);
+                        mScanning = false;
+                        connectDevices();
+                    }
                 }
             }, SCAN_PERIOD);
             mScanning = true;
@@ -402,12 +405,17 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                     && !mBluetoothLeService.mGattHashMap.containsKey(address)) {
 
                 mConnectionsList.add(mPairedDevicesMap.get(address));
+
+                if (mPairedDevices.size() == mConnectionsList.size()) {
+                    stopScan();
+                    connectDevices();
+                }
             }
         }
 
         @Override
         public void onScanFailed(int errorCode) {
-            L.error("Scan Failed  - Error Code: " + errorCode);
+
         }
     };
 
