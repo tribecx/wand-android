@@ -65,7 +65,7 @@ public class BluetoothLeService extends Service {
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
-    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+    private class GattCallback extends BluetoothGattCallback {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             String intentAction;
@@ -164,7 +164,7 @@ public class BluetoothLeService extends Service {
             L.debug("onCharacteristicChanged() - Address: " + address + " Data: " + value);
             broadcastUpdate(ACTION_DATA_AVAILABLE, address, characteristic);
         }
-    };
+    }
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -278,7 +278,7 @@ public class BluetoothLeService extends Service {
             // We want to connect automatically to the device, so we are setting the autoConnect
             // parameter to true.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                BluetoothGatt bluetoothGatt = device.connectGatt(this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE);
+                BluetoothGatt bluetoothGatt = device.connectGatt(this, false, new GattCallback(), BluetoothDevice.TRANSPORT_LE);
                 refreshDeviceCache(bluetoothGatt);
                 mGattHashMap.put(address, bluetoothGatt);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -287,7 +287,7 @@ public class BluetoothLeService extends Service {
                 try {
                     Method connectGattMethod = device.getClass().getDeclaredMethod("connectGatt", Context.class, boolean.class, BluetoothGattCallback.class, int.class);
                     connectGattMethod.setAccessible(true);
-                    BluetoothGatt bluetoothGatt = (BluetoothGatt) connectGattMethod.invoke(device, this, false, mGattCallback, BluetoothDevice.TRANSPORT_LE);
+                    BluetoothGatt bluetoothGatt = (BluetoothGatt) connectGattMethod.invoke(device, this, false, new GattCallback(), BluetoothDevice.TRANSPORT_LE);
                     mGattHashMap.put(address, bluetoothGatt);
                 } catch (Exception ex) {
                     L.error("Error on call BluetoothDevice.connectGatt with reflection." + ex);
@@ -296,7 +296,7 @@ public class BluetoothLeService extends Service {
 
             // If any try is fail, then call the connectGatt without transport
             if (mGattHashMap.get(address) == null) {
-                mGattHashMap.put(address, device.connectGatt(this, false, mGattCallback));
+                mGattHashMap.put(address, device.connectGatt(this, false, new GattCallback()));
             }
 
             L.debug("Trying to create a new connection.");
