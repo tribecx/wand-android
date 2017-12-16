@@ -22,7 +22,7 @@ public class WandDevice implements Parcelable {
     public String firmware;
     public String manufacturing_date;
     public boolean is_owner;
-    public boolean close;
+    public boolean connected;
 
     public WandDevice() {
     }
@@ -56,7 +56,7 @@ public class WandDevice implements Parcelable {
         firmware = in.readString();
         manufacturing_date = in.readString();
         is_owner = in.readByte() != 0;
-        close = in.readByte() != 0;
+        connected = in.readByte() != 0;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class WandDevice implements Parcelable {
         dest.writeString(firmware);
         dest.writeString(manufacturing_date);
         dest.writeByte((byte) (is_owner ? 1 : 0));
-        dest.writeByte((byte) (close ? 1 : 0));
+        dest.writeByte((byte) (connected ? 1 : 0));
     }
 
     @Override

@@ -63,7 +63,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         public void onClick(View view) {
             if (mOnItemClickListener != null) {
                 if (mItems.get(getAdapterPosition()) instanceof WandDevice) {
-                    if (((WandDevice) mItems.get(getAdapterPosition())).close)
+                    if (((WandDevice) mItems.get(getAdapterPosition())).connected)
                         mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
                 } else
                     mOnItemClickListener.onItemClick(getAdapterPosition(), mItems.get(getAdapterPosition()));
@@ -113,18 +113,18 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private void bindWandViewHolder(final ViewHolder holder, final WandDevice wandDevice) {
 
-        holder.mRootItemLayout.setBackgroundResource(wandDevice.close ? R.drawable.background_wand_device : R.drawable.background_wand_device_out_range);
-        holder.mWandDeviceImageView.setImageResource(wandDevice.close ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_car_gray);
-        holder.mSeparatorView.setBackgroundColor(wandDevice.close ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
+        holder.mRootItemLayout.setBackgroundResource(wandDevice.connected ? R.drawable.background_wand_device : R.drawable.background_wand_device_out_range);
+        holder.mWandDeviceImageView.setImageResource(wandDevice.connected ? R.drawable.ic_wand_car_purple : R.drawable.ic_wand_car_gray);
+        holder.mSeparatorView.setBackgroundColor(wandDevice.connected ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
         holder.mWandDeviceNameView.setText(wandDevice.name);
-        holder.mWandDeviceNameView.setTextColor(wandDevice.close ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
+        holder.mWandDeviceNameView.setTextColor(wandDevice.connected ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
 
         if (wandDevice.owner != null) {
             holder.mWandDeviceOwnerView.setText(mContext.getString(R.string.label_of, wandDevice.owner));
-            holder.mWandDeviceOwnerView.setTextColor(wandDevice.close ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
+            holder.mWandDeviceOwnerView.setTextColor(wandDevice.connected ? ContextCompat.getColor(mContext, R.color.purple) : ContextCompat.getColor(mContext, R.color.gray_dark));
         }
 
-        if (!wandDevice.close) {
+        if (!wandDevice.connected) {
             holder.mStatusDeviceButton.setBackgroundResource(R.drawable.background_gray_borders_button);
             holder.mStatusDeviceButton.setText("");
             holder.mStatusDeviceButton.setOnClickListener(null);
@@ -238,23 +238,23 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         notifyItemRemoved(position);
     }
 
-    public void notifyDeviceFounded(String address) {
+    public void notifyDeviceConnected(String address) {
         for (int i = 0; i < mItems.size(); i++) {
             WandDevice item = (WandDevice) mItems.get(i);
             if (item.address.equals(address)) {
-                item.close = true;
+                item.connected = true;
                 notifyItemChanged(i);
             }
-            if (item.close) {
+            if (item.connected) {
                 notifyItemChanged(i);
             }
         }
     }
 
-    public void notifyDeviceFounded(WandDevice wandDevice) {
+    public void notifyDeviceConnected(WandDevice wandDevice) {
         if (mItems.contains(wandDevice)) {
             int position = mItems.indexOf(wandDevice);
-            ((WandDevice) mItems.get(position)).close = true;
+            ((WandDevice) mItems.get(position)).connected = true;
             notifyItemChanged(position);
         }
     }
@@ -263,7 +263,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         for (int i = 0; i < mItems.size(); i++) {
             WandDevice item = (WandDevice) mItems.get(i);
             if (item.address.equals(address)) {
-                item.close = false;
+                item.connected = false;
                 notifyItemChanged(i);
             }
         }
@@ -272,7 +272,7 @@ public class WandDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     public void notifyDeviceDisconnected(WandDevice wandDevice) {
         if (mItems.contains(wandDevice)) {
             int position = mItems.indexOf(wandDevice);
-            ((WandDevice) mItems.get(position)).close = false;
+            ((WandDevice) mItems.get(position)).connected = false;
             notifyItemChanged(position);
         }
     }

@@ -234,6 +234,7 @@ public class PairDeviceActivity extends AppCompatActivity {
                     if (Database.mWandDeviceDao.getDeviceByAddress(mDeviceAddress) == null) {
                         if (Database.mWandDeviceDao.addDevice(mWandDevice)) {
                             L.debug("Device " + mWandDevice.name + " of " + mWandDevice.owner + " added");
+                            mBluetoothLeService.closeConnection(mWandDevice.address);
                             dismissProgressDialog();
                             showDoneDialog();
                         }

@@ -278,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 }
 
                 if (connected) {
-                    mAdapter.notifyDeviceFounded(wandDevice);
+                    mAdapter.notifyDeviceConnected(wandDevice);
                 } else {
                     mBluetoothLeService.disconnect(wandDevice.address);
                     mAdapter.notifyDeviceDisconnected(wandDevice);
@@ -510,28 +510,7 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                             if (data.contains(WandAttributes.ENTER_PASSWORD_OK)) {
                                 updateUI(address);
                             }
-                            if (data.contains("#E") && data.contains("OK@")) {
-                                if (data.contains(WandAttributes.MODE_MANUAL)) {
-                                    device.mode = "M";
-                                    L.debug("Updated mode status: " + WandAttributes.MODE_MANUAL);
-                                } else if (data.contains(WandAttributes.MODE_AUTOMATIC)) {
-                                    device.mode = "A";
-                                    L.debug("Updated mode status: " + WandAttributes.MODE_AUTOMATIC);
-                                }
-                                if (data.contains(WandAttributes.RELAY_ENABLED)) {
-                                    device.relay = 1;
-                                    L.debug("Updated relay status: " + WandAttributes.RELAY_ENABLED);
-                                } else if (data.contains(WandAttributes.RELAY_DISABLED)) {
-                                    device.relay = 0;
-                                    L.debug("Updated relay status: " + WandAttributes.RELAY_DISABLED);
-                                }
-                                if (Database.mWandDeviceDao.updateDevice(device)) {
-                                    mAdapter.update(device);
-                                    L.info("Device " + device.address + " of " + device.owner + " updated.");
-                                }
-                            }
                         }
-
                         mAdapter.notifyDataSetChanged();
                         break;
                 }
@@ -546,9 +525,8 @@ public class MainActivity extends AppCompatActivity implements WandDevicesAdapte
                 if (address != null) {
                     if (mPairedDevicesMap != null && mPairedDevicesMap.containsKey(address)) {
                         if (mAdapter != null)
-                            mAdapter.notifyDeviceFounded(address);
+                            mAdapter.notifyDeviceConnected(address);
                     }
-                    mBluetoothLeService.writeCharacteristic(address, WandUtils.getState());
                 }
             }
         });
